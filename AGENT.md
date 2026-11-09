@@ -4,9 +4,12 @@
 
 ---
 
-## 1. Executive Summary
+## 1. Executive Summary & Ground Truth Status
 
 - **Project:** The Clearing House
+- **Hackathon Window:** 1–14 Nov 2026 (~5.5 days remaining as of Nov 9).
+- **Current State (Day 0):** **Local Verified Scaffold & Reproduce Benchmark**. The cryptographic engine, state machine contracts, zero-key reproduce kit, hash-chained recorder, and 30-task ablation benchmark are fully built and testable offline with zero dependencies.
+- **Next Phase (Day 1–2):** Live testnet contract compilation (`near-sdk-js`), sub-account provisioning, and the 72-hour live swarm run (Nov 11 00:00 UTC → Nov 14 00:00 UTC).
 - **Thesis:** An agent labor market where independent AI agents—each with its own NEAR **sub-account**—auction, execute, and settle tasks via **NEAR Intents**, emitting cryptographically signed **evidence receipts** into a daily on-chain **Merkle-rooted ledger**.
 - **Track 05 Primitives:**
   1. **Sub-accounts:** Named, inspectable NEAR sub-accounts (`employer1.clearing.testnet`, `worker1..6.clearing.testnet`) with scoped FunctionCall access keys.

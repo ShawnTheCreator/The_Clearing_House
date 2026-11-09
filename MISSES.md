@@ -8,9 +8,9 @@ Rather than hiding or discarding these failures, **every disputed or failed job 
 
 ---
 
-## Documented Misses & Disputed Executions
+## Documented Misses & Disputed Executions (Ablation Benchmark)
 
-The following disputed receipts occurred during our 30-task benchmark run, intercepted by the Employer Quality Gate before escrow release:
+The following disputed receipts occurred during our 30-task ablation benchmark run under deliberate worker imperfection injection, intercepted by the Employer Quality Gate before escrow release:
 
 | Receipt ID | Job ID | Employer Sub-Account | Awarded Worker | Disputed Price | Block Height | Root Cause / Resolution |
 |---|---|---|---|---|---|---|

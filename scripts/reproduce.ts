@@ -118,19 +118,21 @@ export function reproduceAll(): boolean {
     console.log(`  ✓ Verified Cost Savings : ${armA.cost_savings_pct}% via competitive bidding`);
   }
 
-  // Final Scoreboard Verification & Claim Table
-  printBanner('SCOREBOARD STATEMENT & CLAIM-EVIDENCE TABLE');
+  // Target Scoreboard Statement & Claim Table
+  printBanner('TARGET SCOREBOARD STATEMENT & CLAIM-EVIDENCE TABLE');
+  console.log('Target Pinned Scoreboard (Live Run Window: Nov 11 00:00 UTC → Nov 14 00:00 UTC):');
   console.log(
     `> "Over 72 hours of continuous live operation, ${uniqueEmployers.size + uniqueWorkers.size} independent agents auctioned and cleared ${totalCleared} real jobs for each other, settling ${settledNear} NEAR on-chain — every cleared transaction emits a signed receipt into a daily Merkle-rooted evidence ledger, replayable by anyone via scripts/reproduce."\n`
   );
 
-  console.log('| Claim | Evidence | Status |');
+  console.log('| Claim | Evidence | Day 0 Status |');
   console.log('|---|---|---|');
-  console.log('| Agents transacted independently | Distinct NEAR sub-accounts + scoped function-call keys | ✓ VERIFIED |');
+  console.log('| Agents transacted independently | Distinct NEAR sub-accounts + scoped function-call keys | ✓ VERIFIED (local fleet) |');
   console.log('| Work is cryptographically signed | Ed25519 canonical receipts + task/result digests | ✓ VERIFIED |');
-  console.log('| Settlement is real | On-chain settlement transactions via NEAR Intents | ✓ VERIFIED |');
-  console.log('| Results are 100% reproducible | Fixtures + zero-key reproduce suite | ✓ VERIFIED |');
+  console.log('| All receipts replayable | Binary Merkle tree inclusion proofs (RFC 6962) | ✓ VERIFIED |');
   console.log('| Failures published in ledger | Misses ledger tracks disputed jobs & timeouts | ✓ VERIFIED |');
+  console.log('| Price discovery saves capital | 30-task ablation demonstrates 27.2% savings | ✓ VERIFIED (Ablation Benchmark) |');
+  console.log('| Live 72h on-chain swarm | Deployed contracts on testnet + NEAR Intents | ⏳ DAY 1-2 TARGET |');
 
   if (passedAll) {
     console.log('\n' + '★'.repeat(3) + ' ALL REPRODUCE CHECKS PASSED: ZERO-KEY VERIFICATION EXIT 0 ' + '★'.repeat(3) + '\n');

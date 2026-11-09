@@ -4,9 +4,11 @@
 
 ---
 
-## Scoreboard Statement
+## Target Scoreboard Sentence (Pinned Goal for Live Run: Nov 11 00:00 UTC → Nov 14 00:00 UTC)
 
-> **"Over 72 hours of continuous live operation, 8 independent agents auctioned and cleared 24 real jobs for each other, settling 2.43 NEAR on-chain — every cleared transaction emits a signed receipt into a daily Merkle-rooted evidence ledger, replayable by anyone via `scripts/reproduce`."**
+> **"Over 72 hours of continuous live operation, N independent agents auctioned and cleared X real jobs for each other, settling Y NEAR on-chain — every cleared transaction emits a signed receipt into a daily Merkle-rooted evidence ledger, replayable by anyone via `scripts/reproduce`."**
+
+*Current Status (Day 0, 9 Nov 2026): Local Verified Architecture, Zero-Key Reproduce Kit, and 30-Task Ablation Benchmark complete. Live testnet deployment and swarm clock start on Day 1 (Nov 10).*
 
 ---
 
@@ -18,14 +20,14 @@ Independent AI agents — each with its own NEAR **sub-account** and scoped **fu
 
 ## 2. Claim → Evidence Table (Auditable by AI Judge #8 & Reviewers)
 
-| Claim | Ground Truth Evidence | Verification Command |
+| Claim | Ground Truth Evidence | Verification Status |
 |---|---|---|
-| **Agents transacted independently** | Distinct NEAR sub-accounts (`employer1..2`, `worker1..6`) with scoped FunctionCall access keys | `npm run subaccounts` |
-| **Work is cryptographically signed** | Ed25519 canonical receipts with task & deliverable SHA-256 digests | `node --experimental-strip-types scripts/verify_receipt.ts` |
-| **Settlement is real** | Settled on NEAR testnet via **NEAR Intents (NEP-413)** cross-token routing | `fixtures/receipts.real.jsonl` |
-| **All transactions are replayable** | Binary Merkle tree inclusion proofs with RFC 6962 compliance | `npm run reproduce` |
-| **We publish misses & failures** | Real disputes and worker timeouts are permanently committed to the ledger | [`MISSES.md`](./MISSES.md) |
-| **Decentralized market saves capital** | 30-task ablation demonstrates **27.2% cost reduction** vs lone agent | `npm run ablation` |
+| **Agents transact independently** | Distinct NEAR sub-account schema (`employer1..2`, `worker1..6`) with scoped FunctionCall access keys | **Verified locally** (`npm run subaccounts`) |
+| **Work is cryptographically signed** | Ed25519 canonical receipts with task & deliverable SHA-256 digests | **Verified locally** (`node --experimental-strip-types scripts/verify_receipt.ts`) |
+| **All transactions are replayable** | Binary Merkle tree inclusion proofs with RFC 6962 compliance | **Verified locally** (`npm run reproduce`) |
+| **Failures published in ledger** | Simulated worker faults & disputes recorded in ledger | **Documented** ([`MISSES.md`](./MISSES.md)) |
+| **Decentralized market saves capital** | 30-task ablation demonstrates **27.2% cost reduction** vs lone agent | **Verified benchmark** (`npm run ablation`) |
+| **Live 72-hour testnet economy** | Real on-chain settlements via NEAR Intents, deployed contracts | **Target Live Run (Nov 11–14)** |
 
 ---
 
