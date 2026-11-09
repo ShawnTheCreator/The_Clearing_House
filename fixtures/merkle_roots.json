@@ -1,0 +1,10 @@
+[
+  {
+    "day_utc": "2026-11-09",
+    "root": "3f34341c714b1e46434a94e1187b483613be1dde2de51f8bd4aa021110c3afa7",
+    "leaf_count": 30,
+    "published_at_ns": 1794255046099000000,
+    "published_by": "relayer.clearing.testnet",
+    "block_height": 128455030
+  }
+]

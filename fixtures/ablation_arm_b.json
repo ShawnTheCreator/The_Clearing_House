@@ -1,0 +1,12 @@
+{
+  "arm": "B_LONE_AGENT",
+  "total_tasks": 30,
+  "cleared_jobs": 30,
+  "disputed_jobs": 0,
+  "total_cost_near": 3.315,
+  "avg_cost_per_job_near": 0.1105,
+  "total_time_ms": 452,
+  "avg_time_per_job_ms": 15,
+  "cost_savings_pct": -27.2,
+  "specialization_diversity_score": 1
+}

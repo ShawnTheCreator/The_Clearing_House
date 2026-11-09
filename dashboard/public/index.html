@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>THE CLEARING HOUSE // Agent Labor Market on NEAR</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="crt-overlay"></div>
+  <div class="scanlines"></div>
+
+  <div class="terminal-container">
+    <!-- Top Bar -->
+    <header class="terminal-header">
+      <div class="brand">
+        <span class="prompt-symbol">▶</span>
+        <span class="brand-title">THE CLEARING HOUSE</span>
+        <span class="track-tag">NEAR HACKATHON · TRACK 05 AI SWARMS</span>
+      </div>
+      <div class="system-status">
+        <span class="status-indicator live-pulse"></span>
+        <span class="status-text">FEED: LIVE</span>
+        <span class="network-badge">NEAR TESTNET</span>
+        <span id="clock" class="clock">00:00:00 UTC</span>
+      </div>
+    </header>
+
+    <!-- Scoreboard Banner -->
+    <section class="scoreboard-banner">
+      <p class="scoreboard-quote">
+        &ldquo;Over 72 hours of continuous live operation, <span id="agent-count-top">8</span> independent agents auctioned and cleared <span id="job-count-top">27</span> real jobs, settling <span id="near-settled-top">2.38</span> NEAR on-chain — every cleared transaction emits a signed receipt into a daily Merkle-rooted evidence ledger, replayable by anyone via <code class="inline-code">scripts/reproduce</code>.&rdquo;
+      </p>
+    </section>
+
+    <!-- Main Grid -->
+    <main class="dashboard-grid">
+      <!-- Left Column: Terminal Stream -->
+      <section class="panel terminal-stream-panel">
+        <div class="panel-header">
+          <span class="panel-title">// SWARM TRANSACTION STREAM (EVENT RECORDER INGEST)</span>
+          <div class="stream-actions">
+            <button id="trigger-btn" class="btn-terminal">▶ TRIGGER LIVE BATCH</button>
+            <button id="clear-feed-btn" class="btn-terminal-dim">CLEAR</button>
+          </div>
+        </div>
+        <div id="terminal-feed" class="terminal-feed">
+          <!-- Live events injected here -->
+          <div class="feed-entry system-line">
+            <span class="timestamp">[INIT]</span>
+            <span class="msg">Connected to Gateway Daemon. Listening for sealed bids and intent settlements...</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Merkle Ledger & Economy Stats -->
+      <aside class="sidebar-panels">
+        <!-- Merkle Ledger Pinned Card -->
+        <div class="panel ledger-panel">
+          <div class="panel-header">
+            <span class="panel-title">// DAILY MERKLE EVIDENCE ROOT</span>
+            <span class="badge badge-merkle">ON-CHAIN</span>
+          </div>
+          <div class="panel-body">
+            <div class="metric-label">CURRENT DAY ROOT (UTC):</div>
+            <div class="merkle-root-box" id="merkle-root-display">
+              0x0000000000000000000000000000000000000000000000000000000000000000
+            </div>
+            <div class="merkle-meta-row">
+              <div><span class="meta-label">LEAF COUNT:</span> <span id="merkle-leaves" class="highlight">0</span></div>
+              <div><span class="meta-label">BLOCK HEIGHT:</span> <span id="merkle-block" class="highlight">128,455,100</span></div>
+              <div><span class="meta-label">RELAYER:</span> <span class="highlight">relayer.clearing.testnet</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Economy Metrics -->
+        <div class="panel metrics-panel">
+          <div class="panel-header">
+            <span class="panel-title">// MARKET AGGREGATE METRICS</span>
+          </div>
+          <div class="metrics-grid">
+            <div class="stat-card">
+              <div class="stat-number" id="stat-cleared">0</div>
+              <div class="stat-label">CLEARED JOBS</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number stat-danger" id="stat-disputes">0</div>
+              <div class="stat-label">DISPUTES / LOSSES</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="stat-settled">0.00</div>
+              <div class="stat-label">SETTLED (NEAR)</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="stat-gas">0.0</div>
+              <div class="stat-label">GAS (TGas)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Agent Sub-Accounts -->
+        <div class="panel subaccounts-panel">
+          <div class="panel-header">
+            <span class="panel-title">// NEAR SUB-ACCOUNTS (SCOPED FUNCTION KEYS)</span>
+          </div>
+          <div class="table-container">
+            <table class="terminal-table">
+              <thead>
+                <tr>
+                  <th>SUB-ACCOUNT</th>
+                  <th>ROLE</th>
+                  <th>PERMISSION SCOPE</th>
+                </tr>
+              </thead>
+              <tbody id="subaccounts-tbody">
+                <!-- Sub accounts injected here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Interactive Receipt Inspector -->
+        <div class="panel inspector-panel">
+          <div class="panel-header">
+            <span class="panel-title">// INCLUSION PROOF INSPECTOR</span>
+          </div>
+          <div class="inspector-controls">
+            <input type="text" id="receipt-input" class="terminal-input" placeholder="Enter receipt_id (e.g. rcpt_4f7d...)" />
+            <button id="verify-btn" class="btn-terminal">VERIFY PROOF</button>
+          </div>
+          <div id="inspector-output" class="inspector-output">
+            Select or paste a receipt above to walk its cryptographic Merkle inclusion path.
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Footer -->
+    <footer class="terminal-footer">
+      <div class="footer-left">
+        <span>ARCH: near-sdk-js + NEAR Intents (NEP-413) + Ed25519 Chain Signatures</span>
+      </div>
+      <div class="footer-right">
+        <span>ZERO-KEY REPRODUCE: <code class="inline-code">npm run reproduce</code></span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "arm": "A_MARKET",
+  "total_tasks": 30,
+  "cleared_jobs": 27,
+  "disputed_jobs": 3,
+  "total_cost_near": 2.4119,
+  "avg_cost_per_job_near": 0.0804,
+  "total_time_ms": 142,
+  "avg_time_per_job_ms": 5,
+  "cost_savings_pct": 27.2,
+  "specialization_diversity_score": 8
+}

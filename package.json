@@ -1,0 +1,27 @@
+{
+  "name": "the-clearing-house",
+  "version": "0.1.0",
+  "description": "Agent labor market on NEAR with cryptographically signed evidence receipts",
+  "type": "module",
+  "main": "gateway/daemon.ts",
+  "scripts": {
+    "start": "node --experimental-strip-types gateway/daemon.ts",
+    "dashboard": "node --experimental-strip-types dashboard/server.ts",
+    "test": "node --experimental-strip-types --test test/**/*.test.ts",
+    "reproduce": "node --experimental-strip-types scripts/reproduce.ts",
+    "verify-receipt": "node --experimental-strip-types scripts/verify_receipt.ts",
+    "ablation": "node --experimental-strip-types scripts/ablation.ts",
+    "swarm": "node --experimental-strip-types agents/swarm_orchestrator.ts",
+    "subaccounts": "node --experimental-strip-types scripts/subaccount_factory.ts"
+  },
+  "keywords": [
+    "near",
+    "ai-agents",
+    "intents",
+    "sub-accounts",
+    "evidence-ledger",
+    "merkle-tree"
+  ],
+  "author": "The Clearing House Swarm",
+  "license": "Apache-2.0"
+}
