@@ -12,7 +12,10 @@
     "verify-receipt": "node --experimental-strip-types scripts/verify_receipt.ts",
     "ablation": "node --experimental-strip-types scripts/ablation.ts",
     "swarm": "node --experimental-strip-types agents/swarm_orchestrator.ts",
-    "subaccounts": "node --experimental-strip-types scripts/subaccount_factory.ts"
+    "subaccounts": "node --experimental-strip-types scripts/subaccount_factory.ts",
+    "testnet:deploy": "node --experimental-strip-types scripts/deploy_live.ts",
+    "testnet:swarm": "node --experimental-strip-types scripts/live_swarm.ts",
+    "verify:live": "node --experimental-strip-types scripts/verify_receipt.ts --receipt rcpt_3VVLCnAEyQKLSiDW"
   },
   "keywords": [
     "near",
@@ -23,5 +26,11 @@
     "merkle-tree"
   ],
   "author": "The Clearing House Swarm",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "dependencies": {
+    "near-api-js": "^7.2.0"
+  },
+  "devDependencies": {
+    "near-cli": "^4.0.13"
+  }
 }

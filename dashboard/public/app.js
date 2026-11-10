@@ -225,6 +225,9 @@ verifyBtn.addEventListener('click', async () => {
     text += `Outcome:        ${receipt.outcome}\n`;
     text += `Price Settled:  ${formatNear(receipt.price_yoctonear)}\n`;
     text += `Settlement TX:  ${receipt.settlement_tx}\n`;
+    if (receipt.settlement_tx && receipt.settlement_tx.length > 30 && !receipt.settlement_tx.startsWith('tx_intent')) {
+      text += `Explorer:       https://testnet.nearblocks.io/txns/${receipt.settlement_tx}\n`;
+    }
     text += `Leaf Hash:      ${proof.leaf_hash}\n`;
     text += `Proof Depth:    ${proof.path.length} steps\n`;
     text += `Computed Root:  ${proof.root}\n`;

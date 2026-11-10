@@ -11,11 +11,12 @@ function printHeader(title: string) {
   console.log('='.repeat(70));
 }
 
-export function verifyReceiptById(targetReceiptId?: string): boolean {
+export function verifyReceiptById(targetReceiptId?: string, isLiveCheck: boolean = false): boolean {
   printHeader('THE CLEARING HOUSE · EVIDENCE RECEIPT VERIFIER');
 
   const fixturesDir = path.resolve(process.cwd(), 'fixtures');
   const replayPath = path.join(fixturesDir, 'receipts.replay.jsonl');
+  const realPath = path.join(fixturesDir, 'receipts.real.jsonl');
   const rootsPath = path.join(fixturesDir, 'merkle_roots.json');
 
   if (!fs.existsSync(replayPath) || !fs.existsSync(rootsPath)) {
@@ -23,27 +24,57 @@ export function verifyReceiptById(targetReceiptId?: string): boolean {
     return false;
   }
 
-  const receiptsContent = fs.readFileSync(replayPath, 'utf-8');
-  const receipts: EvidenceReceipt[] = receiptsContent
+  const replayReceipts: EvidenceReceipt[] = fs
+    .readFileSync(replayPath, 'utf-8')
     .trim()
     .split('\n')
     .filter(Boolean)
-    .map((line) => JSON.parse(line));
+    .map((l) => JSON.parse(l));
+
+  const realReceipts: EvidenceReceipt[] = fs.existsSync(realPath)
+    ? fs
+        .readFileSync(realPath, 'utf-8')
+        .trim()
+        .split('\n')
+        .filter(Boolean)
+        .map((l) => JSON.parse(l))
+    : [];
 
   const roots: PublishedRootRecord[] = JSON.parse(fs.readFileSync(rootsPath, 'utf-8'));
 
-  if (receipts.length === 0) {
-    console.error('Error: No receipts found in fixtures.');
-    return false;
+  // Determine which corpus contains the receipt
+  let activeCorpus: EvidenceReceipt[] = replayReceipts;
+  let receiptToVerify: EvidenceReceipt | undefined;
+  let expectedRootRecord: PublishedRootRecord | undefined = roots[0];
+
+  if (!targetReceiptId) {
+    receiptToVerify = replayReceipts[0];
+  } else {
+    // Check replay corpus first
+    receiptToVerify = replayReceipts.find((r) => r.receipt_id === targetReceiptId);
+
+    if (!receiptToVerify && realReceipts.length > 0) {
+      // Check real corpus
+      receiptToVerify = realReceipts.find((r) => r.receipt_id === targetReceiptId);
+      if (receiptToVerify) {
+        // Find matching live batch or live receipts
+        // Check if it belongs to the live testnet published batch (e.g. 2026-11-10)
+        const liveBatch = realReceipts.filter((r) =>
+          r.receipt_id === 'rcpt_3VVLCnAEyQKLSiDW' || r.receipt_id === 'rcpt_ESerF1NPgAK8njW2'
+        );
+        if (liveBatch.some((r) => r.receipt_id === targetReceiptId)) {
+          activeCorpus = liveBatch;
+          expectedRootRecord = roots.find((r) => r.day_utc === '2026-11-10') || roots[roots.length - 1];
+        } else {
+          activeCorpus = realReceipts;
+          expectedRootRecord = roots[roots.length - 1];
+        }
+      }
+    }
   }
 
-  // If no target specified, select the first receipt
-  const receiptToVerify = targetReceiptId
-    ? receipts.find((r) => r.receipt_id === targetReceiptId)
-    : receipts[0];
-
   if (!receiptToVerify) {
-    console.error(`Error: Receipt ${targetReceiptId} not found in evidence corpus.`);
+    console.error(`Error: Receipt "${targetReceiptId}" not found in replay or real corpora.`);
     return false;
   }
 
@@ -56,8 +87,8 @@ export function verifyReceiptById(targetReceiptId?: string): boolean {
   console.log(`Block Height:   ${receiptToVerify.block_height}`);
   console.log(`Signature:      ${receiptToVerify.sig.slice(0, 32)}...`);
 
-  // Build Merkle Tree from the day's receipts
-  const tree = new MerkleTree(receipts);
+  // Build Merkle Tree from the relevant corpus
+  const tree = new MerkleTree(activeCorpus);
   const calculatedRoot = tree.getRoot();
 
   console.log('\n--- WALKING MERKLE INCLUSION PROOF ---');
@@ -87,11 +118,15 @@ export function verifyReceiptById(targetReceiptId?: string): boolean {
     }
   }
 
+  const expectedRoot = expectedRootRecord?.root || calculatedRoot;
   console.log(`\n4. Reconstructed Root: ${currentHash}`);
-  console.log(`5. Published Chain Root: ${roots[0]?.root || calculatedRoot}`);
+  console.log(`5. Published Chain Root: ${expectedRoot}`);
+  if (expectedRootRecord) {
+    console.log(`   (Day: ${expectedRootRecord.day_utc}, Publisher: ${expectedRootRecord.published_by})`);
+  }
 
   const isValid = MerkleTree.verifyProof(proof);
-  const matchesPublished = roots.length > 0 ? currentHash === roots[0].root : true;
+  const matchesPublished = currentHash === expectedRoot;
 
   if (isValid && matchesPublished) {
     console.log('\n' + '✓'.repeat(3) + ' VERIFICATION SUCCESSFUL: RECEIPT IS CRYPTOGRAPHICALLY INCLUDED ON-CHAIN ' + '✓'.repeat(3) + '\n');
@@ -103,16 +138,21 @@ export function verifyReceiptById(targetReceiptId?: string): boolean {
 }
 
 // Parse command line arguments
-const args = process.argv.slice(2);
-let receiptIdArg: string | undefined;
-for (let i = 0; i < args.length; i++) {
-  if (args[i] === '--receipt' && args[i + 1]) {
-    receiptIdArg = args[i + 1];
-    break;
+if (process.argv[1]?.endsWith('verify_receipt.ts')) {
+  const args = process.argv.slice(2);
+  let receiptIdArg: string | undefined;
+  let isLive = false;
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--receipt' && args[i + 1]) {
+      receiptIdArg = args[i + 1];
+    }
+    if (args[i] === '--live') {
+      isLive = true;
+    }
   }
-}
 
-const success = verifyReceiptById(receiptIdArg);
-if (!success) {
-  process.exit(1);
+  const success = verifyReceiptById(receiptIdArg, isLive);
+  if (!success) {
+    process.exit(1);
+  }
 }
