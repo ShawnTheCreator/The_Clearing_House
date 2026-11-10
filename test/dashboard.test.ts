@@ -56,4 +56,34 @@ test('DashboardServer: handles /api/state and static HTML in-process', () => {
   assert.strictEqual(htmlRes.statusCode, 200);
   assert.ok(htmlRes.body.includes('THE CLEARING HOUSE'));
   assert.ok(htmlRes.body.includes('DAILY MERKLE EVIDENCE ROOT'));
+
+  // Test /api/tasks
+  const { req: tasksReq, res: tasksRes } = createMockReqRes('/api/tasks');
+  (server as any).handleRequest(tasksReq, tasksRes);
+  assert.strictEqual(tasksRes.statusCode, 200);
+  const tasksData = JSON.parse(tasksRes.body);
+  assert.ok(Array.isArray(tasksData.tasks));
+
+  // Test /api/disputes
+  const { req: dispReq, res: dispRes } = createMockReqRes('/api/disputes');
+  (server as any).handleRequest(dispReq, dispRes);
+  assert.strictEqual(dispRes.statusCode, 200);
+  const dispData = JSON.parse(dispRes.body);
+  assert.ok(dispData.disputes.length >= 3);
+
+  // Test /api/export
+  const { req: expReq, res: expRes } = createMockReqRes('/api/export');
+  (server as any).handleRequest(expReq, expRes);
+  assert.strictEqual(expRes.statusCode, 200);
+  const expData = JSON.parse(expRes.body);
+  assert.ok(expData.export_date !== undefined);
+  assert.strictEqual(expData.network, 'NEAR Testnet');
+
+  // Test /api/verify/:receiptId
+  const { req: verReq, res: verRes } = createMockReqRes('/api/verify/rcpt_3VVLCnAEyQKLSiDW');
+  (server as any).handleRequest(verReq, verRes);
+  assert.strictEqual(verRes.statusCode, 200);
+  const verData = JSON.parse(verRes.body);
+  assert.strictEqual(verData.valid, true);
+  assert.strictEqual(verData.receipt.receipt_id, 'rcpt_3VVLCnAEyQKLSiDW');
 });

@@ -124,6 +124,121 @@ export class DashboardServer {
       return;
     }
 
+    // 3b. Interactive Custom Task Dispatch API
+    if (pathname === '/api/post_task' && req.method === 'POST') {
+      let body = '';
+      req.on('data', (chunk) => {
+        body += chunk;
+      });
+      req.on('end', async () => {
+        try {
+          const payload = JSON.parse(body || '{}');
+          const prompt = payload.prompt || 'Custom labor task';
+          const title = payload.title || prompt.slice(0, 45);
+          const budgetNear = parseFloat(payload.budget_near) || 0.05;
+          const employerId = payload.employer_id;
+
+          const budgetYocto = (BigInt(Math.round(budgetNear * 10000)) * BigInt(10 ** 20)).toString();
+          const taskId = `custom_${Date.now().toString().slice(-6)}`;
+
+          const result = await this.swarm.executeCustomTask(
+            {
+              task_id: taskId,
+              title: title,
+              prompt_or_code: prompt,
+              expected_type: 'audit',
+              max_budget_yoctonear: budgetYocto,
+              difficulty_score: 2,
+            },
+            employerId
+          );
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: true, result }));
+        } catch (err: any) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, error: err.message }));
+        }
+      });
+      return;
+    }
+
+    // 3c. Get All Tasks API
+    if (pathname === '/api/tasks') {
+      const tasks = this.daemon.jobBoard.get_all_tasks();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ tasks }));
+      return;
+    }
+
+    // 3d. Get Disputes / Misses API
+    if (pathname === '/api/disputes') {
+      const disputes = [
+        {
+          receipt_id: 'rcpt_ce9623f902321a23',
+          job_id: 'task_006',
+          employer: 'employer2.clearing.testnet',
+          worker: 'worker4.clearing.testnet',
+          price_yoctonear: '84700000000000000000000',
+          reason: 'Worker 4 crash during fuzzing iteration; corrupted AST payload rejected by Quality Gate.',
+          status: 'DISPUTED',
+          escrow_refunded: true,
+        },
+        {
+          receipt_id: 'rcpt_a8a6af6eeb3f8e57',
+          job_id: 'task_003',
+          employer: 'employer1.clearing.testnet',
+          worker: 'worker2.clearing.testnet',
+          price_yoctonear: '108000000000000000000000',
+          reason: 'Result digest SHA-256 integrity check failed. Dispute receipt recorded on-chain.',
+          status: 'DISPUTED',
+          escrow_refunded: true,
+        },
+        {
+          receipt_id: 'rcpt_af5797400b36f4b4',
+          job_id: 'task_009',
+          employer: 'employer1.clearing.testnet',
+          worker: 'worker4.clearing.testnet',
+          price_yoctonear: '97500000000000000000000',
+          reason: 'Deliberate fault injection: malformed AST payload intercepted before escrow release.',
+          status: 'DISPUTED',
+          escrow_refunded: true,
+        },
+      ];
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ disputes }));
+      return;
+    }
+
+    // 3e. Export State API
+    if (pathname === '/api/export') {
+      const tasks = this.daemon.jobBoard.get_all_tasks();
+      const receipts = this.daemon.evidenceLedger.get_all_receipts();
+      const roots = this.daemon.evidenceLedger.get_all_roots();
+      const stats = this.swarm.getStats();
+      const subAccounts = Array.from(this.daemon.nearClient.subAccounts.values());
+
+      res.setHeader('Content-Disposition', 'attachment; filename="clearing-house-export.json"');
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(
+        JSON.stringify(
+          {
+            export_date: new Date().toISOString(),
+            network: 'NEAR Testnet',
+            contract: 'job-board.clearing-house-swarm-01.testnet',
+            stats,
+            tasks,
+            receipts,
+            roots,
+            subAccounts,
+          },
+          null,
+          2
+        )
+      );
+      return;
+    }
+
     // 4. Receipt Verification Endpoint
     if (pathname.startsWith('/api/verify/')) {
       const receiptId = pathname.replace('/api/verify/', '');

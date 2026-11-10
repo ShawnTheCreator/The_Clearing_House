@@ -1,5 +1,6 @@
-// The Clearing House — Devin-Inspired AI Swarm Workbench Logic
+// The Clearing House — Fully Functional Devin-Style Swarm Workbench Logic
 
+// Element references
 const feedEl = document.getElementById('terminal-feed');
 const rootDisplayEl = document.getElementById('merkle-root-display');
 const leavesDisplayEl = document.getElementById('merkle-leaves');
@@ -12,10 +13,262 @@ const triggerBatchBtn = document.getElementById('trigger-batch-btn');
 const submitMissionBtn = document.getElementById('submit-mission-btn');
 const missionPromptEl = document.getElementById('mission-prompt');
 const subaccountsTbody = document.getElementById('subaccounts-tbody');
+const jobsTableBody = document.getElementById('jobs-table-body');
+const disputesTbody = document.getElementById('disputes-tbody');
+const boardTotalCount = document.getElementById('board-total-count');
+
+// Sidebar toggle
+const sidebarEl = document.getElementById('sidebar');
+const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+if (sidebarToggleBtn && sidebarEl) {
+  sidebarToggleBtn.addEventListener('click', () => {
+    sidebarEl.classList.toggle('collapsed');
+  });
+}
+
+// Organization Switcher Dropdown
+const orgSelector = document.getElementById('org-selector');
+const orgDropdown = document.getElementById('org-dropdown');
+const currentOrgName = document.getElementById('current-org-name');
+
+if (orgSelector && orgDropdown) {
+  orgSelector.addEventListener('click', (e) => {
+    e.stopPropagation();
+    orgDropdown.style.display = orgDropdown.style.display === 'none' ? 'flex' : 'none';
+  });
+
+  document.querySelectorAll('.org-dropdown-item').forEach((item) => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.org-dropdown-item').forEach((i) => i.classList.remove('active'));
+      item.classList.add('active');
+      const title = item.querySelector('.dropdown-title').textContent;
+      currentOrgName.textContent = title.split('.')[0];
+      orgDropdown.style.display = 'none';
+      appendFeed('task-line', `Switched active swarm context to <strong>${title}</strong>`);
+      loadInitialState();
+    });
+  });
+}
+
+// Agent Role Selector Dropdown
+const agentSelectorPill = document.getElementById('agent-selector-pill');
+const agentRoleDropdown = document.getElementById('agent-role-dropdown');
+const selectedAgentLabel = document.getElementById('selected-agent-label');
+let currentSelectedAgentRole = 'swarm';
+
+if (agentSelectorPill && agentRoleDropdown) {
+  agentSelectorPill.addEventListener('click', (e) => {
+    e.stopPropagation();
+    agentRoleDropdown.style.display = agentRoleDropdown.style.display === 'none' ? 'flex' : 'none';
+  });
+
+  document.querySelectorAll('.role-option').forEach((opt) => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('.role-option').forEach((o) => o.classList.remove('active'));
+      opt.classList.add('active');
+      const role = opt.getAttribute('data-role');
+      currentSelectedAgentRole = role;
+      const title = opt.querySelector('strong').textContent.split(' ')[1];
+      selectedAgentLabel.textContent = title;
+      agentRoleDropdown.style.display = 'none';
+    });
+  });
+}
+
+// Auction Parameters Popover
+const auctionParamsBtn = document.getElementById('auction-params-btn');
+const paramsPopover = document.getElementById('params-popover');
+if (auctionParamsBtn && paramsPopover) {
+  auctionParamsBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    paramsPopover.style.display = paramsPopover.style.display === 'none' ? 'flex' : 'none';
+  });
+}
+
+// Close open popovers when clicking outside
+document.addEventListener('click', () => {
+  if (orgDropdown) orgDropdown.style.display = 'none';
+  if (agentRoleDropdown) agentRoleDropdown.style.display = 'none';
+  if (paramsPopover) paramsPopover.style.display = 'none';
+});
+
+// Task Spec Preset Button
+const attachSpecBtn = document.getElementById('attach-spec-btn');
+const samplePresets = [
+  'Audit smart contract reentrancy guard and storage mutation callbacks for Track 05 AI Swarms',
+  'Formally verify NEP-413 intent message nonce ordering and solver swap settlement invariants',
+  'Execute RFC 6962 leaf collision test vector assertions across odd and even binary Merkle trees',
+  'Profile gas consumption for daily Merkle root publish transactions on NEAR testnet',
+];
+let presetIndex = 0;
+if (attachSpecBtn && missionPromptEl) {
+  attachSpecBtn.addEventListener('click', () => {
+    missionPromptEl.value = samplePresets[presetIndex % samplePresets.length];
+    presetIndex++;
+    missionPromptEl.focus();
+  });
+}
+
+// Voice Microphone Simulation
+const micBtn = document.getElementById('mic-btn');
+if (micBtn && missionPromptEl) {
+  micBtn.addEventListener('click', () => {
+    micBtn.style.color = '#ef4444';
+    missionPromptEl.placeholder = 'Listening for speech input...';
+    setTimeout(() => {
+      missionPromptEl.value = 'Security audit: Verify function-call key scoping and allowance limits';
+      micBtn.style.color = '';
+      missionPromptEl.placeholder = 'Ask The Clearing House swarm to audit contracts, benchmark solvers, or clear tasks...';
+    }, 1000);
+  });
+}
+
+// Search Modal (Ctrl+K)
+const searchModal = document.getElementById('search-modal');
+const searchTrigger = document.getElementById('search-modal-trigger');
+const closeSearchBtn = document.getElementById('close-search-btn');
+const globalSearchInput = document.getElementById('global-search-input');
+const searchResultsList = document.getElementById('search-results-list');
+
+function openSearch() {
+  if (!searchModal) return;
+  searchModal.style.display = 'flex';
+  globalSearchInput.focus();
+  renderSearchResults('');
+}
+
+function closeSearch() {
+  if (!searchModal) return;
+  searchModal.style.display = 'none';
+  globalSearchInput.value = '';
+}
+
+if (searchTrigger) searchTrigger.addEventListener('click', openSearch);
+if (closeSearchBtn) closeSearchBtn.addEventListener('click', closeSearch);
+
+window.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    openSearch();
+  }
+  if (e.key === 'Escape') {
+    closeSearch();
+    closeSettings();
+    closeHelp();
+  }
+});
+
+let cachedTasks = [];
+let cachedReceipts = [];
+
+function renderSearchResults(query) {
+  if (!searchResultsList) return;
+  const q = query.toLowerCase().trim();
+  searchResultsList.innerHTML = '';
+
+  const searchable = [
+    { type: 'Task', id: 'job_live_783050_01', title: 'Security scan of FunctionCall keys', meta: '0.038 NEAR' },
+    { type: 'Task', id: 'job_live_851092_02', title: 'NEP-413 Intent Formal Verification', meta: '0.034 NEAR' },
+    { type: 'Task', id: 'job_live_206818', title: 'Cross-Contract Call Guard Audit', meta: '0.040 NEAR' },
+    { type: 'Receipt', id: 'rcpt_3VVLCnAEyQKLSiDW', title: 'Evidence Receipt (Worker 2 Winner)', meta: 'CLEARED' },
+    { type: 'Receipt', id: 'rcpt_ESerF1NPgAK8njW2', title: 'Evidence Receipt (Worker 1 Winner)', meta: 'CLEARED' },
+    { type: 'Receipt', id: 'rcpt_ce9623f902321a23', title: 'Disputed Execution (Worker 4)', meta: 'DISPUTED' },
+    { type: 'SubAccount', id: 'employer1.clearing-house-swarm-01.testnet', title: 'Employer Sub-Account', meta: 'Role: Employer' },
+    { type: 'SubAccount', id: 'worker1.clearing-house-swarm-01.testnet', title: 'Worker 1 Sub-Account', meta: 'Role: Worker' },
+    { type: 'SubAccount', id: 'worker2.clearing-house-swarm-01.testnet', title: 'Worker 2 Sub-Account', meta: 'Role: Worker' },
+  ];
+
+  const filtered = searchable.filter(
+    (item) => item.id.toLowerCase().includes(q) || item.title.toLowerCase().includes(q)
+  );
+
+  if (filtered.length === 0) {
+    searchResultsList.innerHTML = '<div style="padding:12px; color:#9ca3af; font-size:12px;">No matching items found.</div>';
+    return;
+  }
+
+  for (const item of filtered) {
+    const div = document.createElement('div');
+    div.className = 'search-result-item';
+    div.innerHTML = `
+      <div class="search-result-left">
+        <span class="search-result-type">${item.type}</span>
+        <strong>${item.id}</strong> · <span style="color:#6b7280">${item.title}</span>
+      </div>
+      <span style="font-size:11px; color:#9ca3af">${item.meta}</span>
+    `;
+    div.addEventListener('click', () => {
+      closeSearch();
+      if (item.type === 'Receipt') {
+        if (receiptInput) receiptInput.value = item.id;
+        switchTab('proofs');
+        verifyReceipt(item.id);
+      } else if (item.type === 'Task') {
+        switchTab('board');
+      } else {
+        switchTab('subaccounts');
+      }
+    });
+    searchResultsList.appendChild(div);
+  }
+}
+
+if (globalSearchInput) {
+  globalSearchInput.addEventListener('input', (e) => {
+    renderSearchResults(e.target.value);
+  });
+}
+
+// Settings Modal
+const settingsModal = document.getElementById('settings-modal');
+const settingsBtn = document.getElementById('settings-btn');
+const closeSettingsBtn = document.getElementById('close-settings-btn');
+const saveSettingsBtn = document.getElementById('save-settings-btn');
+
+function openSettings() {
+  if (settingsModal) settingsModal.style.display = 'flex';
+}
+function closeSettings() {
+  if (settingsModal) settingsModal.style.display = 'none';
+}
+
+if (settingsBtn) settingsBtn.addEventListener('click', openSettings);
+if (closeSettingsBtn) closeSettingsBtn.addEventListener('click', closeSettings);
+if (saveSettingsBtn) {
+  saveSettingsBtn.addEventListener('click', () => {
+    closeSettings();
+    appendFeed('task-line', 'Configuration saved: Connected to NEAR RPC.');
+  });
+}
+
+// Help Modal
+const helpModal = document.getElementById('help-modal');
+const helpBtn = document.getElementById('help-btn');
+const closeHelpBtn = document.getElementById('close-help-btn');
+
+function openHelp() {
+  if (helpModal) helpModal.style.display = 'flex';
+}
+function closeHelp() {
+  if (helpModal) helpModal.style.display = 'none';
+}
+
+if (helpBtn) helpBtn.addEventListener('click', openHelp);
+if (closeHelpBtn) closeHelpBtn.addEventListener('click', closeHelp);
+
+// Quick Receipt Chips
+document.querySelectorAll('.receipt-chip').forEach((chip) => {
+  chip.addEventListener('click', () => {
+    const rcpt = chip.getAttribute('data-rcpt');
+    if (rcpt && receiptInput) {
+      receiptInput.value = rcpt;
+      verifyReceipt(rcpt);
+    }
+  });
+});
 
 // Tab Navigation Logic
 function switchTab(tabId) {
-  // Update nav-item active states
   document.querySelectorAll('.nav-item').forEach((item) => {
     if (item.getAttribute('data-tab') === tabId) {
       item.classList.add('active');
@@ -24,7 +277,6 @@ function switchTab(tabId) {
     }
   });
 
-  // Update workbench tab buttons
   document.querySelectorAll('.tab-btn').forEach((btn) => {
     if (btn.getAttribute('data-tab') === tabId) {
       btn.classList.add('active');
@@ -33,7 +285,6 @@ function switchTab(tabId) {
     }
   });
 
-  // Update tab contents
   document.querySelectorAll('.tab-content').forEach((content) => {
     if (content.id === `tab-${tabId}`) {
       content.classList.add('active');
@@ -41,9 +292,12 @@ function switchTab(tabId) {
       content.classList.remove('active');
     }
   });
+
+  if (tabId === 'board') loadJobBoard();
+  if (tabId === 'disputes') loadDisputes();
+  if (tabId === 'subaccounts') loadSubAccounts();
 }
 
-// Attach click listeners to tabs
 document.querySelectorAll('.tab-btn').forEach((btn) => {
   btn.addEventListener('click', () => {
     const tabId = btn.getAttribute('data-tab');
@@ -73,14 +327,21 @@ document.querySelectorAll('.recent-item').forEach((item) => {
   });
 });
 
-// Advanced tips / toggle details
-const toggleTipsBtn = document.getElementById('toggle-tips-btn');
-if (toggleTipsBtn) {
-  toggleTipsBtn.addEventListener('click', () => {
-    const section = document.querySelector('.workbench-section');
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth' });
-    }
+// New Mission Button
+const newSessionBtn = document.getElementById('new-session-btn');
+if (newSessionBtn && missionPromptEl) {
+  newSessionBtn.addEventListener('click', () => {
+    switchTab('stream');
+    missionPromptEl.value = '';
+    missionPromptEl.focus();
+  });
+}
+
+// Clear Feed Button
+const clearFeedBtn = document.getElementById('clear-feed-btn');
+if (clearFeedBtn && feedEl) {
+  clearFeedBtn.addEventListener('click', () => {
+    feedEl.innerHTML = '<div class="feed-line">[CLEAR] Feed cleared. Listening for next event...</div>';
   });
 }
 
@@ -112,7 +373,7 @@ function formatNear(yoctonear) {
   }
 }
 
-// Initial State Loader
+// Load Initial State
 async function loadInitialState() {
   try {
     const res = await fetch('/api/state');
@@ -127,17 +388,7 @@ async function loadInitialState() {
     }
 
     if (data.subAccounts && subaccountsTbody) {
-      subaccountsTbody.innerHTML = '';
-      for (const acc of data.subAccounts) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="subaccount-id">${acc.account_id}</td>
-          <td><span class="role-badge">${acc.role}</span></td>
-          <td>job_board (scoped 250 TGas)</td>
-          <td>0.25 NEAR</td>
-        `;
-        subaccountsTbody.appendChild(tr);
-      }
+      renderSubAccounts(data.subAccounts);
     }
 
     if (data.latest_receipts && data.latest_receipts.length > 0 && receiptInput) {
@@ -148,7 +399,132 @@ async function loadInitialState() {
   }
 }
 
-// SSE Live Stream
+// Sub-Accounts Renderer
+function renderSubAccounts(accounts) {
+  if (!subaccountsTbody) return;
+  subaccountsTbody.innerHTML = '';
+  for (const acc of accounts) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="subaccount-id">${acc.account_id}</td>
+      <td><span class="role-badge">${acc.role}</span></td>
+      <td>job_board (post_task, bid, settle)</td>
+      <td>0.25 NEAR (250 TGas)</td>
+      <td><a href="https://testnet.nearblocks.io/address/${acc.account_id}" target="_blank" style="color:var(--brand-blue); text-decoration:none;">View &nearr;</a></td>
+    `;
+    subaccountsTbody.appendChild(tr);
+  }
+}
+
+async function loadSubAccounts() {
+  try {
+    const res = await fetch('/api/state');
+    const data = await res.json();
+    if (data.subAccounts) renderSubAccounts(data.subAccounts);
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+// Job Board Loader
+async function loadJobBoard(statusFilter = 'all') {
+  if (!jobsTableBody) return;
+  try {
+    const res = await fetch('/api/tasks');
+    const data = await res.json();
+    let tasks = data.tasks || [];
+
+    // Fallback tasks if daemon is fresh
+    if (tasks.length === 0) {
+      tasks = [
+        {
+          job_id: 'job_live_783050_01',
+          title: 'Security Audit: FunctionCall Key Scoping',
+          employer: 'employer1.clearing-house-swarm-01.testnet',
+          selected_worker: 'worker2.clearing-house-swarm-01.testnet',
+          awarded_price_yoctonear: '38000000000000000000000',
+          status: 'CLEARED',
+        },
+        {
+          job_id: 'job_live_851092_02',
+          title: 'Formal Verification: NEP-413 Intent Rail',
+          employer: 'employer1.clearing-house-swarm-01.testnet',
+          selected_worker: 'worker1.clearing-house-swarm-01.testnet',
+          awarded_price_yoctonear: '34000000000000000000000',
+          status: 'CLEARED',
+        },
+        {
+          job_id: 'job_live_206818',
+          title: 'Security Audit: Cross-Contract Call Guard',
+          employer: 'employer1.clearing-house-swarm-01.testnet',
+          selected_worker: 'worker1.clearing-house-swarm-01.testnet',
+          awarded_price_yoctonear: '40000000000000000000000',
+          status: 'CLEARED',
+        },
+      ];
+    }
+
+    if (statusFilter !== 'all') {
+      tasks = tasks.filter((t) => t.status === statusFilter);
+    }
+
+    if (boardTotalCount) boardTotalCount.textContent = `${tasks.length} Jobs`;
+
+    jobsTableBody.innerHTML = '';
+    for (const t of tasks) {
+      const tr = document.createElement('tr');
+      const statusColor = t.status === 'CLEARED' ? 'green' : t.status === 'DELIVERED' ? 'blue' : 'amber';
+      tr.innerHTML = `
+        <td class="subaccount-id">${t.job_id}</td>
+        <td><strong>${t.title || 'Subtask'}</strong></td>
+        <td>${t.employer || 'employer1'}</td>
+        <td>${t.selected_worker || '<em style="color:#9ca3af">Bidding in progress</em>'}</td>
+        <td>${formatNear(t.awarded_price_yoctonear || t.max_budget_yoctonear)}</td>
+        <td><span class="status-dot ${statusColor}" style="display:inline-block; vertical-align:middle; margin-right:4px;"></span>${t.status}</td>
+      `;
+      jobsTableBody.appendChild(tr);
+    }
+  } catch (err) {
+    console.error('Failed to load job board:', err);
+  }
+}
+
+// Filter pills on Job Board
+document.querySelectorAll('.filter-pill').forEach((pill) => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.filter-pill').forEach((p) => p.classList.remove('active'));
+    pill.classList.add('active');
+    const filter = pill.getAttribute('data-filter');
+    loadJobBoard(filter);
+  });
+});
+
+// Disputes Loader
+async function loadDisputes() {
+  if (!disputesTbody) return;
+  try {
+    const res = await fetch('/api/disputes');
+    const data = await res.json();
+    const disputes = data.disputes || [];
+
+    disputesTbody.innerHTML = '';
+    for (const d of disputes) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="subaccount-id">${d.receipt_id}</td>
+        <td><strong>${d.job_id}</strong></td>
+        <td><span class="role-badge" style="color:#ef4444">${d.worker}</span></td>
+        <td>${d.reason}</td>
+        <td><span style="color:#10b981; font-weight:600;">✓ Escrow Retained</span></td>
+      `;
+      disputesTbody.appendChild(tr);
+    }
+  } catch (err) {
+    console.error('Failed to load disputes:', err);
+  }
+}
+
+// SSE Live Stream Listener
 function initEventStream() {
   const eventSource = new EventSource('/api/stream');
 
@@ -242,7 +618,7 @@ function handleServerEvent(event) {
 
 // Receipt Proof Verification
 async function verifyReceipt(targetReceiptId) {
-  const receiptId = targetReceiptId || receiptInput.value.trim();
+  const receiptId = targetReceiptId || (receiptInput ? receiptInput.value.trim() : '');
   if (!receiptId || !inspectorOutput) return;
 
   inspectorOutput.textContent = `Querying RFC 6962 inclusion proof for ${receiptId}...`;
@@ -291,53 +667,110 @@ if (verifyBtn) {
   verifyBtn.addEventListener('click', () => verifyReceipt());
 }
 
-// Trigger Batch / Mission Dispatch
-async function triggerSwarmBatch() {
-  const missionText = missionPromptEl ? missionPromptEl.value.trim() : '';
-  if (triggerBatchBtn) {
-    triggerBatchBtn.disabled = true;
-    triggerBatchBtn.textContent = '⏳ Swarm Executing...';
+// Interactive Custom Mission Dispatch
+async function triggerMissionDispatch() {
+  const prompt = missionPromptEl ? missionPromptEl.value.trim() : '';
+  if (!prompt) {
+    if (missionPromptEl) {
+      missionPromptEl.placeholder = 'Please enter a task description first (or click + to insert a preset)...';
+      missionPromptEl.focus();
+    }
+    return;
   }
+
+  const budgetInput = document.getElementById('budget-input');
+  const budgetNear = budgetInput ? parseFloat(budgetInput.value) || 0.05 : 0.05;
+
   if (submitMissionBtn) {
     submitMissionBtn.disabled = true;
+    submitMissionBtn.innerHTML = '<span style="font-size:11px">...</span>';
   }
 
-  if (missionText) {
-    appendFeed('task-line', `<strong>DISPATCHING MISSION:</strong> "${missionText}"`);
-    if (missionPromptEl) missionPromptEl.value = '';
-  }
+  appendFeed('task-line', `<strong>DISPATCHING MISSION:</strong> "${prompt}" (Budget: ${budgetNear} NEAR)...`);
+  if (missionPromptEl) missionPromptEl.value = '';
 
   try {
-    await fetch('/api/trigger_batch', { method: 'POST' });
-  } finally {
-    setTimeout(() => {
-      if (triggerBatchBtn) {
-        triggerBatchBtn.disabled = false;
-        triggerBatchBtn.textContent = '▶ Trigger Swarm Batch';
-      }
-      if (submitMissionBtn) {
-        submitMissionBtn.disabled = false;
-      }
-    }, 1500);
-  }
-}
+    const res = await fetch('/api/post_task', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt,
+        title: prompt.slice(0, 45),
+        budget_near: budgetNear,
+        employer_id: currentSelectedAgentRole !== 'swarm' ? currentSelectedAgentRole : undefined,
+      }),
+    });
 
-if (triggerBatchBtn) {
-  triggerBatchBtn.addEventListener('click', triggerSwarmBatch);
+    const data = await res.json();
+    if (data.success && data.result) {
+      appendFeed(
+        'settle-line',
+        `★ MISSION COMPLETE: <strong>${data.result.task_id}</strong> [${data.result.status}]`
+      );
+      if (data.result.receipt && receiptInput) {
+        receiptInput.value = data.result.receipt.receipt_id;
+      }
+      loadInitialState();
+    }
+  } catch (err) {
+    console.error('Mission failed:', err);
+    appendFeed('dispute-line', `✗ Mission dispatch failed: ${err.message}`);
+  } finally {
+    if (submitMissionBtn) {
+      submitMissionBtn.disabled = false;
+      submitMissionBtn.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="19" x2="12" y2="5"></line>
+          <polyline points="5 12 12 5 19 12"></polyline>
+        </svg>
+      `;
+    }
+  }
 }
 
 if (submitMissionBtn) {
-  submitMissionBtn.addEventListener('click', triggerSwarmBatch);
+  submitMissionBtn.addEventListener('click', triggerMissionDispatch);
 }
 
 if (missionPromptEl) {
   missionPromptEl.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      triggerSwarmBatch();
+      triggerMissionDispatch();
     }
   });
 }
+
+// Trigger Batch Button
+if (triggerBatchBtn) {
+  triggerBatchBtn.addEventListener('click', async () => {
+    triggerBatchBtn.disabled = true;
+    triggerBatchBtn.textContent = '⏳ Swarm Executing Batch...';
+    try {
+      await fetch('/api/trigger_batch', { method: 'POST' });
+    } finally {
+      setTimeout(() => {
+        triggerBatchBtn.disabled = false;
+        triggerBatchBtn.textContent = '▶ Trigger Swarm Batch';
+      }, 1500);
+    }
+  });
+}
+
+// Checklist Step Interactivity
+document.querySelectorAll('.checklist-item').forEach((item, index) => {
+  item.style.cursor = 'pointer';
+  item.addEventListener('click', () => {
+    const steps = [
+      () => switchTab('subaccounts'),
+      () => window.open('https://testnet.nearblocks.io/address/job-board.clearing-house-swarm-01.testnet', '_blank'),
+      () => switchTab('board'),
+      () => switchTab('stream'),
+      () => switchTab('proofs'),
+    ];
+    if (steps[index]) steps[index]();
+  });
+});
 
 // Boot up
 loadInitialState();

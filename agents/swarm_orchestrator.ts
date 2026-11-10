@@ -196,6 +196,52 @@ export class SwarmOrchestrator {
     return { stats, results };
   }
 
+  public async executeCustomTask(
+    taskSpec: SubtaskSpec,
+    employerAccountId?: string
+  ): Promise<{ task_id: string; status: string; receipt?: any }> {
+    const employer = employerAccountId
+      ? this.employers.find((e) => e.accountId === employerAccountId) || this.employers[0]
+      : this.employers[0];
+
+    // 1. Post task
+    const task = employer.postSubtask(taskSpec);
+
+    // 2. All workers inspect and submit sealed bids
+    for (const worker of this.workers) {
+      worker.evaluateTaskAndBid(task);
+    }
+
+    // 3. Workers reveal their bids
+    for (const worker of this.workers) {
+      worker.revealStoredBid(task.job_id);
+    }
+
+    // 4. Employer evaluates bids and awards the job
+    const awardedWorkerId = employer.evaluateAndAward(task.job_id);
+    if (!awardedWorkerId) {
+      return { task_id: task.job_id, status: 'NO_BIDS' };
+    }
+
+    const awardedWorker = this.workers.find((w) => w.accountId === awardedWorkerId)!;
+
+    // 5. Worker executes task and delivers
+    await awardedWorker.executeTask(task.job_id);
+
+    // 6. Employer inspects deliverable and settles via NEAR Intents
+    const receipt = await employer.inspectAndSettle(task.job_id, 'NEAR');
+
+    // 7. Publish daily Merkle root on-chain
+    const day = new Date().toISOString().slice(0, 10);
+    this.gateway.publishDailyRoot(day, this.relayerAccountId);
+
+    return {
+      task_id: task.job_id,
+      status: receipt ? receipt.outcome : 'FAILED',
+      receipt,
+    };
+  }
+
   public getStats(): SwarmStats {
     const allTasks = this.gateway.jobBoard.get_all_tasks();
     const allReceipts = this.gateway.evidenceLedger.get_all_receipts();
