@@ -1,20 +1,20 @@
 :root {
   /* =========================================================================
      EXACT REQUIRED PALETTE:
-     - #69f2be for highlights
+     - #ffffff for background
      - black for text
      - #0560af for buttons
-     - #ffffff for background
-     - #e8e0cb for some other stuff (page/sidebar/canvas)
+     - #69f2be for highlights
+     - #e8e0cb for some other stuff
      ========================================================================= */
-  --bg-page: #e8e0cb;
-  --bg-sidebar: #e8e0cb;
+  --bg-page: #ffffff;
+  --bg-sidebar: #ffffff;
   --bg-card: #ffffff;
   --bg-other: #e8e0cb;
-  --bg-hover: rgba(0, 0, 0, 0.06);
-  --bg-subtle: #f2ede1;
-  --border-color: #d1c8b2;
-  --border-dark: #b8ad92;
+  --bg-hover: #f3f4f6;
+  --bg-subtle: #fafaf9;
+  --border-color: #e5e7eb;
+  --border-dark: #d1d5db;
   --border-focus: #0560af;
 
   /* Black for text */
@@ -47,8 +47,8 @@
   --radius-md: 10px;
   --radius-lg: 14px;
   --radius-xl: 18px;
-  --shadow-card: 0 1px 4px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
-  --shadow-modal: 0 14px 32px -5px rgba(0, 0, 0, 0.18), 0 8px 12px -6px rgba(0, 0, 0, 0.1);
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-modal: 0 14px 32px -5px rgba(0, 0, 0, 0.16), 0 8px 12px -6px rgba(0, 0, 0, 0.08);
 }
 
 * {
@@ -345,7 +345,7 @@ body {
 }
 
 /* =========================================================================
-   MAIN WORKSPACE (Devin Center Area on #e8e0cb)
+   MAIN WORKSPACE (White Background)
    ========================================================================= */
 .main-workspace {
   flex: 1;
@@ -371,7 +371,7 @@ body {
 }
 
 .swarm-watermark polygon {
-  stroke: var(--border-dark);
+  stroke: #e5e7eb;
   stroke-width: 1px;
 }
 
