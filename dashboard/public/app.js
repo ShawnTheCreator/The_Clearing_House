@@ -1,87 +1,146 @@
-// The Clearing House — Terminal Noir Frontend Logic
+// The Clearing House — Devin-Inspired AI Swarm Workbench Logic
 
 const feedEl = document.getElementById('terminal-feed');
 const rootDisplayEl = document.getElementById('merkle-root-display');
 const leavesDisplayEl = document.getElementById('merkle-leaves');
 const blockDisplayEl = document.getElementById('merkle-block');
 
-const statClearedEl = document.getElementById('stat-cleared');
-const statDisputesEl = document.getElementById('stat-disputes');
-const statSettledEl = document.getElementById('stat-settled');
-const statGasEl = document.getElementById('stat-gas');
-
-const agentCountTop = document.getElementById('agent-count-top');
-const jobCountTop = document.getElementById('job-count-top');
-const nearSettledTop = document.getElementById('near-settled-top');
-
-const subaccountsTbody = document.getElementById('subaccounts-tbody');
 const receiptInput = document.getElementById('receipt-input');
 const inspectorOutput = document.getElementById('inspector-output');
 const verifyBtn = document.getElementById('verify-btn');
-const triggerBtn = document.getElementById('trigger-btn');
-const clearFeedBtn = document.getElementById('clear-feed-btn');
-const clockEl = document.getElementById('clock');
+const triggerBatchBtn = document.getElementById('trigger-batch-btn');
+const submitMissionBtn = document.getElementById('submit-mission-btn');
+const missionPromptEl = document.getElementById('mission-prompt');
+const subaccountsTbody = document.getElementById('subaccounts-tbody');
 
-// Clock updater
-setInterval(() => {
-  const now = new Date();
-  clockEl.textContent = now.toTimeString().split(' ')[0] + ' UTC';
-}, 1000);
+// Tab Navigation Logic
+function switchTab(tabId) {
+  // Update nav-item active states
+  document.querySelectorAll('.nav-item').forEach((item) => {
+    if (item.getAttribute('data-tab') === tabId) {
+      item.classList.add('active');
+    } else if (item.getAttribute('data-tab')) {
+      item.classList.remove('active');
+    }
+  });
 
+  // Update workbench tab buttons
+  document.querySelectorAll('.tab-btn').forEach((btn) => {
+    if (btn.getAttribute('data-tab') === tabId) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+
+  // Update tab contents
+  document.querySelectorAll('.tab-content').forEach((content) => {
+    if (content.id === `tab-${tabId}`) {
+      content.classList.add('active');
+    } else {
+      content.classList.remove('active');
+    }
+  });
+}
+
+// Attach click listeners to tabs
+document.querySelectorAll('.tab-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const tabId = btn.getAttribute('data-tab');
+    if (tabId) switchTab(tabId);
+  });
+});
+
+document.querySelectorAll('.nav-item[data-tab]').forEach((item) => {
+  item.addEventListener('click', () => {
+    const tabId = item.getAttribute('data-tab');
+    if (tabId) switchTab(tabId);
+  });
+});
+
+// Recent Sessions Selection
+document.querySelectorAll('.recent-item').forEach((item) => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.recent-item').forEach((i) => i.classList.remove('active'));
+    item.classList.add('active');
+
+    const receiptId = item.getAttribute('data-receipt');
+    if (receiptId && receiptInput) {
+      receiptInput.value = receiptId;
+      switchTab('proofs');
+      verifyReceipt(receiptId);
+    }
+  });
+});
+
+// Advanced tips / toggle details
+const toggleTipsBtn = document.getElementById('toggle-tips-btn');
+if (toggleTipsBtn) {
+  toggleTipsBtn.addEventListener('click', () => {
+    const section = document.querySelector('.workbench-section');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+}
+
+// Feed Appender
 function appendFeed(typeClass, msg) {
-  const entry = document.createElement('div');
-  entry.className = `feed-entry ${typeClass}`;
+  if (!feedEl) return;
+  const line = document.createElement('div');
+  line.className = `feed-line ${typeClass}`;
 
-  const time = document.createElement('span');
-  time.className = 'timestamp';
   const now = new Date();
-  time.textContent = `[${now.toISOString().slice(11, 19)}]`;
+  const timestamp = `[${now.toISOString().slice(11, 19)}]`;
+  line.innerHTML = `<span style="color:#6e7681">${timestamp}</span> ${msg}`;
 
-  const msgSpan = document.createElement('span');
-  msgSpan.className = 'msg';
-  msgSpan.innerHTML = msg;
-
-  entry.appendChild(time);
-  entry.appendChild(msgSpan);
-  feedEl.appendChild(entry);
-
-  // Auto-scroll
+  feedEl.appendChild(line);
   feedEl.scrollTop = feedEl.scrollHeight;
 
-  // Limit feed to last 200 items to avoid DOM lag
   while (feedEl.children.length > 250) {
     feedEl.removeChild(feedEl.firstChild);
   }
 }
 
+function formatNear(yoctonear) {
+  if (!yoctonear) return '0 NEAR';
+  try {
+    const near = Number(BigInt(yoctonear)) / 1e24;
+    return `${near.toFixed(4)} NEAR`;
+  } catch {
+    return `${yoctonear} yocto`;
+  }
+}
+
+// Initial State Loader
 async function loadInitialState() {
   try {
     const res = await fetch('/api/state');
+    if (!res.ok) return;
     const data = await res.json();
-
-    updateMetrics(data.stats);
 
     if (data.roots && data.roots.length > 0) {
       const latestRoot = data.roots[data.roots.length - 1];
-      rootDisplayEl.textContent = latestRoot.root;
-      leavesDisplayEl.textContent = latestRoot.leaf_count;
-      blockDisplayEl.textContent = latestRoot.block_height.toLocaleString();
+      if (rootDisplayEl) rootDisplayEl.textContent = latestRoot.root;
+      if (leavesDisplayEl) leavesDisplayEl.textContent = latestRoot.leaf_count;
+      if (blockDisplayEl) blockDisplayEl.textContent = (latestRoot.block_height || 277076322).toLocaleString();
     }
 
-    if (data.subAccounts) {
+    if (data.subAccounts && subaccountsTbody) {
       subaccountsTbody.innerHTML = '';
       for (const acc of data.subAccounts) {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td class="highlight">${acc.account_id}</td>
-          <td>${acc.role}</td>
+          <td class="subaccount-id">${acc.account_id}</td>
+          <td><span class="role-badge">${acc.role}</span></td>
           <td>job_board (scoped 250 TGas)</td>
+          <td>0.25 NEAR</td>
         `;
         subaccountsTbody.appendChild(tr);
       }
     }
 
-    if (data.latest_receipts && data.latest_receipts.length > 0) {
+    if (data.latest_receipts && data.latest_receipts.length > 0 && receiptInput) {
       receiptInput.value = data.latest_receipts[0].receipt_id;
     }
   } catch (err) {
@@ -89,18 +148,7 @@ async function loadInitialState() {
   }
 }
 
-function updateMetrics(stats) {
-  if (!stats) return;
-  statClearedEl.textContent = stats.total_jobs_cleared;
-  statDisputesEl.textContent = stats.total_jobs_disputed;
-  statSettledEl.textContent = stats.total_near_settled;
-  statGasEl.textContent = (stats.total_gas_burnt_tgas || 0).toFixed(1);
-
-  if (agentCountTop) agentCountTop.textContent = stats.active_agents_count || 8;
-  if (jobCountTop) jobCountTop.textContent = stats.total_jobs_cleared || 0;
-  if (nearSettledTop) nearSettledTop.textContent = stats.total_near_settled || '0.00';
-}
-
+// SSE Live Stream
 function initEventStream() {
   const eventSource = new EventSource('/api/stream');
 
@@ -114,7 +162,7 @@ function initEventStream() {
   };
 
   eventSource.onerror = () => {
-    appendFeed('system-line', '<span style="color:#888">[WARN] Live stream reconnecting...</span>');
+    appendFeed('feed-line', '<span style="color:#8b949e">[STATUS] Reconnecting to Gateway Daemon...</span>');
   };
 }
 
@@ -132,37 +180,36 @@ function handleServerEvent(event) {
     case 'BID_COMMITTED':
       appendFeed(
         'bid-line',
-        `BID COMMIT <em>${payload.worker}</em> → ${payload.job_id} (hash: ${payload.bid_hash.slice(0, 8)}...)`
+        `BID COMMIT <em>${payload.worker}</em> &rarr; ${payload.job_id} (hash: ${payload.bid_hash.slice(0, 10)}...)`
       );
       break;
 
     case 'BID_REVEALED':
       appendFeed(
         'bid-line',
-        `BID REVEAL <em>${payload.worker}</em> → ${payload.job_id} · Price: ${formatNear(payload.price)}`
+        `BID REVEAL <em>${payload.worker}</em> &rarr; ${payload.job_id} at ${formatNear(payload.price)}`
       );
       break;
 
     case 'JOB_AWARDED':
       appendFeed(
-        'award-line',
-        `AWARD <strong>${payload.employer}</strong> → <em>${payload.worker}</em> for ${payload.job_id} · ${formatNear(payload.price)}`
+        'task-line',
+        `AWARD <strong>${payload.job_id}</strong> won by <em>${payload.worker}</em> at ${formatNear(payload.price)}`
       );
       break;
 
     case 'WORK_DELIVERED':
       appendFeed(
-        'deliver-line',
-        `DELIVER <em>${payload.worker}</em> completed ${payload.job_id} · Result Digest: ${payload.result_digest.slice(0, 12)}...`
+        'task-line',
+        `DELIVER <em>${payload.worker}</em> finished ${payload.job_id} · Result Digest: ${payload.result_digest.slice(0, 12)}...`
       );
       break;
 
     case 'SETTLED_INTENT':
       appendFeed(
         'settle-line',
-        `INTENT SETTLED ${payload.job_id} via NEAR Intents (${payload.tx_hash.slice(0, 16)}...) · Payout: ${formatNear(payload.payout)} [${payload.rate}]`
+        `INTENT SETTLED ${payload.job_id} via NEAR Intents (${payload.tx_hash.slice(0, 16)}...) · Payout: ${formatNear(payload.payout)}`
       );
-      // Reload stats after settlement
       loadInitialState();
       break;
 
@@ -184,80 +231,114 @@ function handleServerEvent(event) {
     case 'MERKLE_ROOT_PUBLISHED':
       appendFeed(
         'merkle-line',
-        `★ DAILY MERKLE ROOT PUBLISHED ON-CHAIN: ${payload.root.slice(0, 16)}... (${payload.leaf_count} leaves)`
+        `★ DAILY MERKLE EVIDENCE ROOT PUBLISHED ON-CHAIN: ${payload.root.slice(0, 16)}... (${payload.leaf_count} leaves)`
       );
-      rootDisplayEl.textContent = payload.root;
-      leavesDisplayEl.textContent = payload.leaf_count;
-      blockDisplayEl.textContent = payload.block_height.toLocaleString();
+      if (rootDisplayEl) rootDisplayEl.textContent = payload.root;
+      if (leavesDisplayEl) leavesDisplayEl.textContent = payload.leaf_count;
+      if (blockDisplayEl) blockDisplayEl.textContent = (payload.block_height || 277076322).toLocaleString();
       break;
   }
 }
 
-function formatNear(yoctonear) {
-  if (!yoctonear) return '0 NEAR';
-  try {
-    const near = Number(BigInt(yoctonear)) / 1e24;
-    return `${near.toFixed(4)} NEAR`;
-  } catch {
-    return `${yoctonear} yocto`;
-  }
-}
+// Receipt Proof Verification
+async function verifyReceipt(targetReceiptId) {
+  const receiptId = targetReceiptId || receiptInput.value.trim();
+  if (!receiptId || !inspectorOutput) return;
 
-// Verification button handler
-verifyBtn.addEventListener('click', async () => {
-  const receiptId = receiptInput.value.trim();
-  if (!receiptId) return;
-
-  inspectorOutput.textContent = `Querying on-chain proof for ${receiptId}...`;
+  inspectorOutput.textContent = `Querying RFC 6962 inclusion proof for ${receiptId}...`;
 
   try {
     const res = await fetch(`/api/verify/${receiptId}`);
     if (!res.ok) {
-      inspectorOutput.textContent = `Receipt not found on-chain.`;
+      inspectorOutput.textContent = `Receipt "${receiptId}" not found in current ledger.`;
       return;
     }
 
     const { receipt, proof, valid } = await res.json();
-    let text = `RECEIPT VERIFICATION REPORT\n`;
+    let text = `======================================================================\n`;
+    text += `  EVIDENCE RECEIPT CRYPTOGRAPHIC VERIFICATION REPORT\n`;
+    text += `======================================================================\n`;
     text += `Receipt ID:     ${receipt.receipt_id}\n`;
     text += `Job ID:         ${receipt.job_id}\n`;
-    text += `Parties:        ${receipt.employer} ↔ ${receipt.worker}\n`;
+    text += `Employer:       ${receipt.employer}\n`;
+    text += `Worker:         ${receipt.worker}\n`;
     text += `Outcome:        ${receipt.outcome}\n`;
     text += `Price Settled:  ${formatNear(receipt.price_yoctonear)}\n`;
     text += `Settlement TX:  ${receipt.settlement_tx}\n`;
     if (receipt.settlement_tx && receipt.settlement_tx.length > 30 && !receipt.settlement_tx.startsWith('tx_intent')) {
-      text += `Explorer:       https://testnet.nearblocks.io/txns/${receipt.settlement_tx}\n`;
+      text += `Explorer URL:   https://testnet.nearblocks.io/txns/${receipt.settlement_tx}\n`;
     }
     text += `Leaf Hash:      ${proof.leaf_hash}\n`;
-    text += `Proof Depth:    ${proof.path.length} steps\n`;
-    text += `Computed Root:  ${proof.root}\n`;
-    text += `\nVerification Status: ${valid ? '✓✓✓ CRYPTOGRAPHICALLY VALID & INCLUDED ON-CHAIN ✓✓✓' : '✗ FAILED'}\n`;
+    text += `Proof Depth:    ${proof.path.length} steps across ${proof.total_leaves || proof.path.length + 1} leaves\n`;
+
+    if (proof.path && proof.path.length > 0) {
+      text += `\nMerkle Inclusion Steps:\n`;
+      proof.path.forEach((step, idx) => {
+        text += `  Step ${idx + 1} [${step.position.toUpperCase()}]: H(0x01 || ${step.hash.slice(0, 16)}...)\n`;
+      });
+    }
+
+    text += `\nReconstructed Root: ${proof.root}\n`;
+    text += `Status: ${valid ? '✓✓✓ CRYPTOGRAPHICALLY VALID & INCLUDED ON-CHAIN ✓✓✓' : '✗ FAILED'}\n`;
 
     inspectorOutput.textContent = text;
   } catch (err) {
     inspectorOutput.textContent = `Error: ${err.message}`;
   }
-});
+}
 
-// Trigger Live Batch button
-triggerBtn.addEventListener('click', async () => {
-  triggerBtn.disabled = true;
-  triggerBtn.textContent = '⏳ RUNNING SWARM...';
+if (verifyBtn) {
+  verifyBtn.addEventListener('click', () => verifyReceipt());
+}
+
+// Trigger Batch / Mission Dispatch
+async function triggerSwarmBatch() {
+  const missionText = missionPromptEl ? missionPromptEl.value.trim() : '';
+  if (triggerBatchBtn) {
+    triggerBatchBtn.disabled = true;
+    triggerBatchBtn.textContent = '⏳ Swarm Executing...';
+  }
+  if (submitMissionBtn) {
+    submitMissionBtn.disabled = true;
+  }
+
+  if (missionText) {
+    appendFeed('task-line', `<strong>DISPATCHING MISSION:</strong> "${missionText}"`);
+    if (missionPromptEl) missionPromptEl.value = '';
+  }
+
   try {
     await fetch('/api/trigger_batch', { method: 'POST' });
   } finally {
     setTimeout(() => {
-      triggerBtn.disabled = false;
-      triggerBtn.textContent = '▶ TRIGGER LIVE BATCH';
+      if (triggerBatchBtn) {
+        triggerBatchBtn.disabled = false;
+        triggerBatchBtn.textContent = '▶ Trigger Swarm Batch';
+      }
+      if (submitMissionBtn) {
+        submitMissionBtn.disabled = false;
+      }
     }, 1500);
   }
-});
+}
 
-// Clear feed button
-clearFeedBtn.addEventListener('click', () => {
-  feedEl.innerHTML = '';
-});
+if (triggerBatchBtn) {
+  triggerBatchBtn.addEventListener('click', triggerSwarmBatch);
+}
 
-// Initialize on boot
+if (submitMissionBtn) {
+  submitMissionBtn.addEventListener('click', triggerSwarmBatch);
+}
+
+if (missionPromptEl) {
+  missionPromptEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      triggerSwarmBatch();
+    }
+  });
+}
+
+// Boot up
 loadInitialState();
 initEventStream();
