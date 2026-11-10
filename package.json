@@ -6,6 +6,10 @@
   "main": "gateway/daemon.ts",
   "scripts": {
     "start": "node --experimental-strip-types gateway/daemon.ts",
+    "start:all": "node scripts/start_all.js",
+    "start:frontend": "node frontend/serve.js",
+    "start:csharp": "dotnet run --project backend_csharp/TheClearingHouse.Api",
+    "start:python": "python backend_python/main.py",
     "dashboard": "node --experimental-strip-types dashboard/server.ts",
     "test": "node --experimental-strip-types --test test/**/*.test.ts",
     "reproduce": "node --experimental-strip-types scripts/reproduce.ts",

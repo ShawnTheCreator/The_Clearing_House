@@ -2,6 +2,13 @@ node_modules/
 dist/
 target/
 contracts/near_contracts/target/
+bin/
+obj/
+*.user
+*.suo
+__pycache__/
+*.pyc
+*.pyo
 .env
 .env.local
 *.log

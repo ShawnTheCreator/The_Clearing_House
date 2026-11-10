@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Clearing House // Agent Labor Market on NEAR</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- LEFT SIDEBAR (Devin Navigation) -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="org-selector" id="org-selector" title="Switch Swarm / Fleet">
+          <div class="org-avatar">S</div>
+          <span class="org-name" id="current-org-name">clearing-house-swarm-01</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="sidebar-header-actions">
+          <button class="icon-btn" id="search-modal-trigger" title="Search (Ctrl+K)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></button>
+          <button class="icon-btn" id="sidebar-toggle-btn" title="Toggle Sidebar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg></button>
+        </div>
+      </div>
+
+      <!-- Organization Switcher Dropdown (Hidden by default) -->
+      <div class="org-dropdown-menu" id="org-dropdown" style="display: none;">
+        <div class="org-dropdown-item active" data-org="testnet">
+          <span class="status-dot green"></span>
+          <div>
+            <div class="dropdown-title">clearing-house-swarm-01.testnet</div>
+            <div class="dropdown-subtitle">Live NEAR Testnet (3 Sub-Accounts)</div>
+          </div>
+        </div>
+        <div class="org-dropdown-item" data-org="local">
+          <span class="status-dot blue"></span>
+          <div>
+            <div class="dropdown-title">local-fleet-benchmark</div>
+            <div class="dropdown-subtitle">30-Task Ablation Market Fleet</div>
+          </div>
+        </div>
+        <div class="org-dropdown-item" data-org="lone">
+          <span class="status-dot amber"></span>
+          <div>
+            <div class="dropdown-title">lone-agent-monolith</div>
+            <div class="dropdown-subtitle">Arm B Baseline (Single Worker)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Navigation Menu -->
+      <nav class="sidebar-nav">
+        <a class="nav-item active" data-tab="stream">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg>
+          <span>Sessions / Live Swarm</span>
+        </a>
+        <a class="nav-item" data-tab="board">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>Ask / Job Board</span>
+        </a>
+        <a class="nav-item" data-tab="subaccounts">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Automations / Fleet</span>
+        </a>
+        <a class="nav-item" data-tab="disputes">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Review & Disputes</span>
+        </a>
+        <a class="nav-item" data-tab="proofs">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>DAILY MERKLE EVIDENCE ROOT</span>
+        </a>
+        <a class="nav-item" href="https://testnet.nearblocks.io/address/job-board.clearing-house-swarm-01.testnet" target="_blank">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <span>Wiki / On-Chain &nearr;</span>
+        </a>
+      </nav>
+
+      <!-- Recent Sessions (matching Devin screenshot) -->
+      <div class="sidebar-recent-section">
+        <div class="recent-header">
+          <span>Recent</span>
+          <div class="recent-actions">
+            <button class="icon-btn" id="filter-recent-btn" title="Filter recent"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></button>
+            <button class="icon-btn" id="new-session-btn" title="New Mission"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+            <button class="icon-btn" id="clear-feed-btn" title="Clear Feed"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+          </div>
+        </div>
+
+        <div class="recent-list" id="recent-sessions-list">
+          <!-- Session 1 -->
+          <div class="recent-item active" data-receipt="rcpt_3VVLCnAEyQKLSiDW" data-spec="Verify FunctionCall key allowance and contract scoping for clearing agents">
+            <div class="recent-title-row">
+              <span class="status-dot blue"></span>
+              <span class="recent-title">Security scan of FunctionCall keys</span>
+            </div>
+            <span class="recent-substatus">Waiting for CI · 1 PR</span>
+          </div>
+
+          <!-- Session 2 -->
+          <div class="recent-item" data-receipt="rcpt_ESerF1NPgAK8njW2" data-spec="Formal verification of NEP-413 intent message nonce ordering and expiry">
+            <div class="recent-title-row">
+              <span class="status-dot blue"></span>
+              <span class="recent-title">NEP-413 Intent Formal Verification</span>
+            </div>
+            <span class="recent-substatus">Working · 0.034 NEAR</span>
+          </div>
+
+          <!-- Session 3 -->
+          <div class="recent-item" data-receipt="rcpt_GwjdgZomZgRTQ4SM" data-spec="Audit cross-contract call state mutations for Track 05 AI Swarms">
+            <div class="recent-title-row">
+              <span class="status-dot green"></span>
+              <span class="recent-title">Cross-Contract Call Guard Audit</span>
+            </div>
+            <span class="recent-substatus">Cleared · Tx GwjdgZom...</span>
+          </div>
+
+          <!-- Session 4 -->
+          <div class="recent-item" data-receipt="rcpt_ce9623f902321a23" data-spec="Worker 4 AST parser fuzzing iteration crash">
+            <div class="recent-title-row">
+              <span class="status-dot red"></span>
+              <span class="recent-title">AST Fuzzing Stress Test (Worker 4)</span>
+            </div>
+            <span class="recent-substatus">Disputed · MISSES.md</span>
+          </div>
+
+          <!-- Session 5 -->
+          <div class="recent-item" data-receipt="rcpt_8556a5d24495b4a9" data-spec="Daily Merkle root published by relayer on NEAR">
+            <div class="recent-title-row">
+              <span class="status-dot blue"></span>
+              <span class="recent-title">Daily Merkle Root Settlement</span>
+            </div>
+            <span class="recent-substatus">now</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar Footer (Devin Upgrade / Settings) -->
+      <div class="sidebar-footer">
+        <a class="upgrade-link" href="https://testnet.nearblocks.io/address/clearing-house-swarm-01.testnet" target="_blank">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="16 12 12 8 8 12"/><line x1="12" y1="16" x2="12" y2="8"/></svg>
+          <span>NEAR Faucet</span>
+        </a>
+        <div class="sidebar-footer-icons">
+          <button class="icon-btn" id="settings-btn" title="Settings"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+          <a class="icon-btn" id="export-btn" href="/api/export" download="clearing-house-export.json" title="Download State Export"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></a>
+          <button class="icon-btn" id="help-btn" title="Help & Architecture"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER MAIN WORKSPACE -->
+    <main class="main-workspace">
+      <!-- 3-Hexagon Watermark (from Devin screenshot) -->
+      <div class="swarm-watermark">
+        <svg width="48" height="48" viewBox="0 0 100 100" fill="none">
+          <polygon points="50,15 75,29 75,57 50,71 25,57 25,29" fill="#e5e7eb" opacity="0.9"/>
+          <polygon points="78,32 103,46 103,74 78,88 53,74 53,46" fill="#d1d5db" opacity="0.75"/>
+          <polygon points="22,32 47,46 47,74 22,88 -3,74 -3,46" fill="#e5e7eb" opacity="0.6"/>
+        </svg>
+      </div>
+
+      <!-- MAIN PROMPT / MISSION CARD (Identical to Devin UI) -->
+      <div class="prompt-card">
+        <!-- Terminal Banner atop Card -->
+        <div class="terminal-banner">
+          <div class="terminal-banner-left">
+            <svg class="terminal-banner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <span>Run Swarm directly from your terminal: <code style="font-family:var(--font-mono); font-size:11.5px; background:#e2e8f0; padding:1px 4px; border-radius:3px;">npm run testnet:swarm</code></span>
+            <a href="https://testnet.nearblocks.io/address/job-board.clearing-house-swarm-01.testnet" target="_blank">Get started</a>
+          </div>
+          <button class="banner-close" onclick="this.parentElement.style.display='none'">✕</button>
+        </div>
+
+        <!-- Prompt Textarea -->
+        <div class="prompt-input-area">
+          <textarea id="mission-prompt" class="prompt-textarea" placeholder="Ask The Clearing House swarm to audit contracts, benchmark solvers, or clear tasks..."></textarea>
+        </div>
+
+        <!-- Action Bar Inside Prompt Card -->
+        <div class="prompt-action-bar">
+          <div class="prompt-controls-left">
+            <!-- Agent Role Selector Pill -->
+            <div class="agent-pill" id="agent-selector-pill">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
+              <span id="selected-agent-label">Swarm Agent</span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+
+            <!-- Agent Role Dropdown -->
+            <div class="agent-role-dropdown" id="agent-role-dropdown" style="display: none;">
+              <div class="role-option active" data-role="swarm">
+                <strong>🤖 Autonomous Swarm</strong>
+                <span>All workers bid competitively</span>
+              </div>
+              <div class="role-option" data-role="employer1">
+                <strong>👔 employer1.clearing-house-swarm-01</strong>
+                <span>Quality Gate & Escrow Payer</span>
+              </div>
+              <div class="role-option" data-role="worker1">
+                <strong>🛠️ worker1 (Execution Engine)</strong>
+                <span>Fast deliverable compilation</span>
+              </div>
+              <div class="role-option" data-role="worker2">
+                <strong>🛡️ worker2 (Verification Specialist)</strong>
+                <span>Formal verification & audits</span>
+              </div>
+            </div>
+
+            <!-- Attach Spec Preset Button -->
+            <button class="icon-btn" id="attach-spec-btn" title="Insert Task Preset"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+
+            <!-- Auction Parameters Dropdown Toggle -->
+            <button class="icon-btn" id="auction-params-btn" title="Auction Parameters"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+          </div>
+
+          <!-- Parameters Popover -->
+          <div class="params-popover" id="params-popover" style="display: none;">
+            <div class="param-row">
+              <label>Escrow Budget (NEAR):</label>
+              <input type="number" id="budget-input" value="0.05" step="0.01" min="0.01" max="5.0" class="mini-input"/>
+            </div>
+            <div class="param-row">
+              <label>Settlement Rail:</label>
+              <select id="rail-select" class="mini-input">
+                <option value="NEAR">Smart Contract Escrow (NEAR)</option>
+                <option value="USDC">NEAR Intents (solver.defuse.near)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="prompt-controls-right">
+            <button class="mic-btn" id="mic-btn" title="Simulate Voice Input"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+            <button class="submit-arrow-btn" id="submit-mission-btn" title="Launch Swarm Auction">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub-Toolbar (12 repositories · Ubuntu · Upgrade plan style) -->
+      <div class="sub-toolbar">
+        <div class="sub-toolbar-left">
+          <div class="sub-tool-item" id="tool-fleet-jump">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <span>3 Active Sub-Accounts</span>
+          </div>
+          <div class="sub-tool-item" id="tool-network-jump">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            <span>NEAR Testnet</span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+        </div>
+        <div class="sub-toolbar-right">
+          <a href="https://testnet.nearblocks.io/address/job-board.clearing-house-swarm-01.testnet" target="_blank">
+            Contract: job-board.clearing-house-swarm-01.testnet &rarr;
+          </a>
+        </div>
+      </div>
+
+      <!-- GET STARTED WITH DEVIN CHECKLIST CARD -->
+      <div class="checklist-card" id="onboarding-card">
+        <div class="checklist-header">
+          <span class="checklist-title">Get started with The Clearing House</span>
+          <div class="checklist-progress-wrap">
+            <span class="progress-text" id="checklist-progress-label">5 of 5</span>
+            <div class="progress-bar-container">
+              <div class="progress-bar-fill" style="width: 100%;"></div>
+            </div>
+            <button class="checklist-close" onclick="document.getElementById('onboarding-card').style.display='none'">✕</button>
+          </div>
+        </div>
+
+        <div class="checklist-items">
+          <div class="checklist-item" id="chk-step-1">
+            <div class="checklist-item-left">
+              <span class="check-circle completed"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span class="checklist-label">Connect NEAR Sub-Accounts (`employer1`, `worker1`, `worker2`)</span>
+            </div>
+            <span class="earned-badge">Earned 10 NEAR</span>
+          </div>
+
+          <div class="checklist-item" id="chk-step-2">
+            <div class="checklist-item-left">
+              <span class="check-circle completed"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span class="checklist-label">Deploy Smart Contract (`the_clearing_house_contracts.wasm`)</span>
+            </div>
+            <span class="earned-badge">Staked 2.5 NEAR</span>
+          </div>
+
+          <div class="checklist-item" id="chk-step-3">
+            <div class="checklist-item-left">
+              <span class="check-circle completed"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span class="checklist-label">Execute Competitive Sealed-Bid Auction (Worker 2 won at 0.038 NEAR)</span>
+            </div>
+            <span class="earned-badge">Saved 27.2%</span>
+          </div>
+
+          <div class="checklist-item" id="chk-step-4">
+            <div class="checklist-item-left">
+              <span class="check-circle completed"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span class="checklist-label">Settle Escrow Payout & Emit Canonical Signed Receipt</span>
+            </div>
+          </div>
+
+          <div class="checklist-item" id="chk-step-5">
+            <div class="checklist-item-left">
+              <span class="check-circle completed"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span class="checklist-label">Publish DAILY MERKLE EVIDENCE ROOT On-Chain (Root `506b5223...`)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="advanced-tips-toggle" id="toggle-tips-btn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          <span>Show live inspection details & proof walker</span>
+        </div>
+      </div>
+
+      <!-- WORKBENCH TABS & LIVE PANELS -->
+      <div class="workbench-section">
+        <div class="workbench-tabs">
+          <button class="tab-btn active" data-tab="stream">Live Swarm Feed</button>
+          <button class="tab-btn" data-tab="board">Job Board</button>
+          <button class="tab-btn" data-tab="proofs">DAILY MERKLE EVIDENCE ROOT</button>
+          <button class="tab-btn" data-tab="subaccounts">NEAR Sub-Accounts Fleet</button>
+          <button class="tab-btn" data-tab="disputes">Review & Disputes</button>
+        </div>
+
+        <!-- Tab 1: Live Swarm Stream -->
+        <div class="tab-content active" id="tab-stream">
+          <div class="stream-panel-header">
+            <div class="stream-title">
+              <span class="pulse-badge"></span>
+              <span>LIVE SWARM TRANSACTION STREAM (EVENT RECORDER INGEST)</span>
+            </div>
+            <button class="btn-primary-blue" id="trigger-batch-btn">▶ Trigger Swarm Batch</button>
+          </div>
+          <div class="stream-feed-box" id="terminal-feed">
+            <div class="feed-line">[INIT] Connected to Gateway Daemon. Listening for sealed bids and intent settlements...</div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Job Board -->
+        <div class="tab-content" id="tab-board">
+          <div class="board-header-row">
+            <div class="board-filters">
+              <button class="filter-pill active" data-filter="all">All Jobs</button>
+              <button class="filter-pill" data-filter="CLEARED">Cleared</button>
+              <button class="filter-pill" data-filter="DELIVERED">Delivered</button>
+              <button class="filter-pill" data-filter="POSTED">In Auction</button>
+            </div>
+            <span class="task-count-badge" id="board-total-count">3 Jobs</span>
+          </div>
+          <table class="subaccounts-table">
+            <thead>
+              <tr>
+                <th>Job ID</th>
+                <th>Title</th>
+                <th>Employer</th>
+                <th>Worker</th>
+                <th>Settled Price</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="jobs-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Tab 3: DAILY MERKLE EVIDENCE ROOT & Proof Inspector -->
+        <div class="tab-content" id="tab-proofs">
+          <div class="merkle-inspector-box">
+            <div class="merkle-root-banner">
+              <div class="merkle-root-label">DAILY MERKLE EVIDENCE ROOT (PUBLISHED ON-CHAIN)</div>
+              <div class="merkle-root-code" id="merkle-root-display">
+                506b5223d3c43a22bf73801ea342c6ed10ec08226d1c91acd1b3953799151f6a
+              </div>
+              <div style="margin-top: 8px; font-size: 11.5px; color: var(--text-secondary); display: flex; gap: 16px;">
+                <span><strong>Leaves:</strong> <span id="merkle-leaves">2</span></span>
+                <span><strong>Block:</strong> <span id="merkle-block">277,076,322</span></span>
+                <span><strong>Publisher:</strong> employer1.clearing-house-swarm-01.testnet</span>
+              </div>
+            </div>
+
+            <div class="quick-receipt-chips">
+              <span class="chip-label">Quick Inspect:</span>
+              <button class="receipt-chip" data-rcpt="rcpt_3VVLCnAEyQKLSiDW">rcpt_3VVLCnAE... (Worker 2)</button>
+              <button class="receipt-chip" data-rcpt="rcpt_ESerF1NPgAK8njW2">rcpt_ESerF1NP... (Worker 1)</button>
+              <button class="receipt-chip" data-rcpt="rcpt_ce9623f902321a23">rcpt_ce9623f9... (Dispute)</button>
+            </div>
+
+            <div class="inspector-input-row">
+              <input type="text" id="receipt-input" class="terminal-input" placeholder="Enter receipt_id (e.g. rcpt_3VVLCnAEyQKLSiDW)" value="rcpt_3VVLCnAEyQKLSiDW"/>
+              <button class="btn-primary-blue" id="verify-btn">Verify Proof</button>
+            </div>
+
+            <div class="proof-output-box" id="inspector-output">
+Click "Verify Proof" above to walk the cryptographic RFC 6962 inclusion path for this receipt against the on-chain root.
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4: Sub-Accounts Fleet -->
+        <div class="tab-content" id="tab-subaccounts">
+          <table class="subaccounts-table">
+            <thead>
+              <tr>
+                <th>Sub-Account</th>
+                <th>Role</th>
+                <th>Access Scope</th>
+                <th>Allowance</th>
+                <th>Explorer</th>
+              </tr>
+            </thead>
+            <tbody id="subaccounts-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Tab 5: Review & Disputes -->
+        <div class="tab-content" id="tab-disputes">
+          <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">
+            Documented execution disputes from <code style="font-family:var(--font-mono); font-size:11.5px; background:#f1f5f9; padding:2px 4px;">MISSES.md</code>. Every failure emits an immutable dispute receipt.
+          </div>
+          <table class="subaccounts-table">
+            <thead>
+              <tr>
+                <th>Receipt ID</th>
+                <th>Job ID</th>
+                <th>Faulting Worker</th>
+                <th>Root Cause / Quality Gate Action</th>
+                <th>Escrow Action</th>
+              </tr>
+            </thead>
+            <tbody id="disputes-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- SEARCH MODAL (Ctrl+K) -->
+  <div class="modal-backdrop" id="search-modal" style="display: none;">
+    <div class="modal-card">
+      <div class="search-input-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="global-search-input" class="modal-search-input" placeholder="Search tasks, receipts, sub-accounts, or tx hashes..."/>
+        <button class="modal-close-btn" id="close-search-btn">ESC</button>
+      </div>
+      <div class="modal-results-list" id="search-results-list">
+        <!-- Results injected here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-backdrop" id="settings-modal" style="display: none;">
+    <div class="modal-card settings-card">
+      <div class="modal-header">
+        <h3>Swarm & RPC Configuration</h3>
+        <button class="icon-btn" id="close-settings-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-item">
+          <label>NEAR RPC Node:</label>
+          <input type="text" value="https://rpc.testnet.near.org" class="terminal-input" id="setting-rpc"/>
+        </div>
+        <div class="setting-item">
+          <label>Job Board Contract Account:</label>
+          <input type="text" value="job-board.clearing-house-swarm-01.testnet" class="terminal-input" readonly/>
+        </div>
+        <div class="setting-item">
+          <label>FunctionCall Gas Allowance:</label>
+          <input type="text" value="250 TGas (0.25 NEAR)" class="terminal-input" readonly/>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary-blue" id="save-settings-btn">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HELP MODAL -->
+  <div class="modal-backdrop" id="help-modal" style="display: none;">
+    <div class="modal-card settings-card">
+      <div class="modal-header">
+        <h3>The Clearing House · Evaluator Cheatsheet</h3>
+        <button class="icon-btn" id="close-help-btn">✕</button>
+      </div>
+      <div class="modal-body" style="font-size: 12.5px; line-height: 1.6; color: var(--text-secondary);">
+        <p><strong>Track 05 AI Swarms:</strong> Many agents. One economy.</p>
+        <p style="margin-top: 8px;"><strong>Offline Reproduce Suite:</strong></p>
+        <code style="display:block; padding:8px; background:#f1f5f9; font-family:var(--font-mono); margin-top:4px; border-radius:4px;">npm run reproduce</code>
+        <p style="margin-top: 8px;"><strong>Verify Live Testnet Receipt:</strong></p>
+        <code style="display:block; padding:8px; background:#f1f5f9; font-family:var(--font-mono); margin-top:4px; border-radius:4px;">npm run verify:live</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- GLOBAL BOTTOM FOOTER (Devin / Mobbin Style) -->
+  <footer class="global-footer">
+    <div class="footer-left">
+      <div class="footer-brand">
+        <span class="footer-dot"></span>
+        <span>THE CLEARING HOUSE</span>
+      </div>
+      <span style="opacity: 0.7;">Many agents. One economy.</span>
+    </div>
+    <div class="footer-right">
+      <div class="mobbin-tag">
+        <span>curated for NEAR HACKATHON · Track 05 AI Swarms</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "the-clearing-house-frontend",
+  "version": "0.1.0",
+  "description": "Devin-inspired UI workbench for The Clearing House (NEAR Hackathon Track 05)",
+  "type": "module",
+  "scripts": {
+    "start": "node serve.js"
+  },
+  "keywords": ["near", "frontend", "workbench", "ai-agents"]
+}
