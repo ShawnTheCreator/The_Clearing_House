@@ -219,3 +219,77 @@ public class PostTaskResult
     [JsonPropertyName("subtasks")]
     public object? Subtasks { get; set; }
 }
+
+public class UserProfile
+{
+    [JsonPropertyName("account_id")]
+    public string AccountId { get; set; } = string.Empty;
+
+    [JsonPropertyName("display_name")]
+    public string DisplayName { get; set; } = string.Empty;
+
+    [JsonPropertyName("role")]
+    public string Role { get; set; } = "employer"; // employer, worker, admin
+
+    [JsonPropertyName("avatar")]
+    public string Avatar { get; set; } = "U";
+
+    [JsonPropertyName("public_key")]
+    public string PublicKey { get; set; } = string.Empty;
+
+    [JsonPropertyName("balance_near")]
+    public double BalanceNear { get; set; } = 25.0;
+
+    [JsonPropertyName("scopes")]
+    public List<string> Scopes { get; set; } = new();
+}
+
+public class UserSession
+{
+    public string Token { get; set; } = string.Empty;
+    public UserProfile User { get; set; } = new();
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime ExpiresAt { get; set; } = DateTime.UtcNow.AddDays(7);
+}
+
+public class LoginRequest
+{
+    [JsonPropertyName("account_id")]
+    public string AccountId { get; set; } = string.Empty;
+
+    [JsonPropertyName("password_or_key")]
+    public string? PasswordOrKey { get; set; }
+}
+
+public class LoginResponse
+{
+    [JsonPropertyName("success")]
+    public bool Success { get; set; }
+
+    [JsonPropertyName("token")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Token { get; set; }
+
+    [JsonPropertyName("user")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public UserProfile? User { get; set; }
+
+    [JsonPropertyName("message")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Message { get; set; }
+}
+
+public class RegisterRequest
+{
+    [JsonPropertyName("account_id")]
+    public string AccountId { get; set; } = string.Empty;
+
+    [JsonPropertyName("display_name")]
+    public string DisplayName { get; set; } = string.Empty;
+
+    [JsonPropertyName("role")]
+    public string Role { get; set; } = "employer";
+
+    [JsonPropertyName("password_or_key")]
+    public string? PasswordOrKey { get; set; }
+}

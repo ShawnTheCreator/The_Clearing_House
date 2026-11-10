@@ -253,7 +253,11 @@
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </div>
         </div>
-        <div class="sub-toolbar-right">
+        <div class="sub-toolbar-right" style="display:flex; align-items:center; gap:10px;">
+          <div class="account-status-pill" id="global-auth-pill" title="Click to Sign In or Switch Account">
+            <span class="status-dot green"></span>
+            <span id="global-auth-label">Sign In / Switch</span>
+          </div>
           <a href="https://testnet.nearblocks.io/address/job-board.clearing-house-swarm-01.testnet" target="_blank">
             Contract: job-board.clearing-house-swarm-01.testnet &rarr;
           </a>
@@ -444,6 +448,48 @@ Click "Verify Proof" above to walk the cryptographic RFC 6962 inclusion path for
         </div>
       </div>
     </main>
+  </div>
+
+  <!-- AUTH & LOGIN MODAL (Managed by C# General Backend) -->
+  <div class="modal-backdrop" id="auth-modal" style="display: none;">
+    <div class="modal-card auth-card">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="status-dot green"></span>
+          <h3>NEAR Account Login & Authentication</h3>
+        </div>
+        <button class="icon-btn" id="close-auth-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- Logged in state box -->
+        <div id="auth-logged-in-box" style="display:none; padding:12px; background:var(--bg-other); border-radius:var(--radius-md); margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-weight:700; font-size:13px;" id="auth-account-id-label">employer1.clearing-house-swarm-01.testnet</div>
+              <div style="font-size:11.5px; color:#2d2a24;" id="auth-role-balance-label">Role: Employer · Balance: 48.25 NEAR</div>
+            </div>
+            <button class="btn-logout" id="auth-logout-btn">Sign Out</button>
+          </div>
+        </div>
+
+        <div style="font-size:12px; font-weight:700; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">Quick 1-Click Fleet Switch:</div>
+        <div class="auth-quick-accounts" id="auth-quick-accounts-list">
+          <!-- Injected via app.js -->
+        </div>
+
+        <div style="margin: 16px 0 12px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+          <div style="font-size:12px; font-weight:700; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">Or Connect Custom NEAR Account:</div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="custom-account-input" class="terminal-input" placeholder="e.g. shawn.testnet or agent.near" style="flex:1;"/>
+            <button class="btn-primary-blue" id="custom-login-btn">Connect</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:11px; color:#6b7280;">Secured with Ed25519 FunctionCall Key Auth</span>
+        <button class="btn-text-close" id="auth-done-btn">Done</button>
+      </div>
+    </div>
   </div>
 
   <!-- SEARCH MODAL (Ctrl+K) -->

@@ -21,10 +21,21 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddHttpClient<AiClientService>();
 builder.Services.AddSingleton<EconomyLedgerState>();
+builder.Services.AddSingleton<AuthService>();
 
 var app = builder.Build();
 
 app.UseCors();
+
+static string? ExtractBearerToken(HttpContext ctx)
+{
+    var authHeader = ctx.Request.Headers["Authorization"].FirstOrDefault();
+    if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+    {
+        return authHeader["Bearer ".Length..].Trim();
+    }
+    return ctx.Request.Query["token"].FirstOrDefault();
+}
 
 // 1. Health check
 app.MapGet("/health", () => Results.Ok(new
@@ -38,10 +49,69 @@ app.MapGet("/health", () => Results.Ok(new
         job_board = "job-board.clearing-house-swarm-01.testnet",
         evidence_ledger = "job-board.clearing-house-swarm-01.testnet"
     },
-    ai_backend = "http://localhost:8000"
+    ai_backend = "http://localhost:8000",
+    auth = "Active (Bearer Session Tokens)"
 }));
 
 app.MapGet("/", () => Results.Redirect("/health"));
+
+// =========================================================================
+// AUTHENTICATION & SESSION ENDPOINTS (Managed by C# General Backend)
+// =========================================================================
+
+// POST /api/auth/login
+app.MapPost("/api/auth/login", (LoginRequest req, AuthService auth) =>
+{
+    var res = auth.Login(req);
+    return res.Success ? Results.Ok(res) : Results.BadRequest(res);
+});
+
+// POST /api/auth/logout
+app.MapPost("/api/auth/logout", (HttpContext ctx, AuthService auth) =>
+{
+    string? token = ExtractBearerToken(ctx);
+    if (!string.IsNullOrEmpty(token))
+    {
+        auth.Logout(token);
+    }
+    return Results.Ok(new { success = true, message = "Logged out successfully" });
+});
+
+// GET /api/auth/me (Current Session)
+app.MapGet("/api/auth/me", (HttpContext ctx, AuthService auth) =>
+{
+    string? token = ExtractBearerToken(ctx);
+    var session = auth.GetSession(token);
+    if (session == null)
+    {
+        return Results.Ok(new { authenticated = false, user = (UserProfile?)null });
+    }
+
+    return Results.Ok(new
+    {
+        authenticated = true,
+        user = session.User,
+        token = session.Token,
+        expires_at = session.ExpiresAt
+    });
+});
+
+// GET /api/auth/accounts (Pre-configured Fleet & Sub-Accounts)
+app.MapGet("/api/auth/accounts", (AuthService auth) =>
+{
+    return Results.Ok(new { accounts = auth.GetKnownAccounts() });
+});
+
+// POST /api/auth/register (Register or Connect Custom NEAR Account)
+app.MapPost("/api/auth/register", (RegisterRequest req, AuthService auth) =>
+{
+    var res = auth.Register(req);
+    return res.Success ? Results.Ok(res) : Results.BadRequest(res);
+});
+
+// =========================================================================
+// ECONOMY & MARKETPLACE ENDPOINTS
+// =========================================================================
 
 // 2. Economy State
 app.MapGet("/api/state", (EconomyLedgerState ledger) =>
@@ -74,10 +144,18 @@ app.MapGet("/api/verify/{receiptId}", (string receiptId, EconomyLedgerState ledg
 });
 
 // 6. Post Task / Dispatch Mission
-app.MapPost("/api/post_task", async (PostTaskRequest req, EconomyLedgerState ledger) =>
+app.MapPost("/api/post_task", async (HttpContext ctx, PostTaskRequest req, EconomyLedgerState ledger, AuthService auth) =>
 {
     try
     {
+        // If authenticated user is present and no employer specified, use authenticated account
+        string? token = ExtractBearerToken(ctx);
+        var session = auth.GetSession(token);
+        if (session != null && string.IsNullOrEmpty(req.EmployerId))
+        {
+            req.EmployerId = session.User.AccountId;
+        }
+
         var result = await ledger.PostTaskAsync(req);
         return Results.Ok(new { success = true, result });
     }

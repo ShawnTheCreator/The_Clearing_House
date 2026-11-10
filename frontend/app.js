@@ -26,28 +26,187 @@ if (sidebarToggleBtn && sidebarEl) {
   });
 }
 
-// Organization Switcher Dropdown
+// =========================================================================
+// AUTHENTICATION & LOGIN (Managed by C# General Backend)
+// =========================================================================
+const authModal = document.getElementById('auth-modal');
+const closeAuthBtn = document.getElementById('close-auth-btn');
+const authDoneBtn = document.getElementById('auth-done-btn');
+const globalAuthPill = document.getElementById('global-auth-pill');
+const globalAuthLabel = document.getElementById('global-auth-label');
+const authQuickAccountsList = document.getElementById('auth-quick-accounts-list');
+const customAccountInput = document.getElementById('custom-account-input');
+const customLoginBtn = document.getElementById('custom-login-btn');
+const authLogoutBtn = document.getElementById('auth-logout-btn');
+const authLoggedInBox = document.getElementById('auth-logged-in-box');
+const authAccountIdLabel = document.getElementById('auth-account-id-label');
+const authRoleBalanceLabel = document.getElementById('auth-role-balance-label');
+const orgAvatar = document.querySelector('.org-avatar');
+
+let currentSessionToken = localStorage.getItem('ch_session_token') || null;
+let currentUserSession = null;
+
+function openAuthModal() {
+  if (!authModal) return;
+  authModal.style.display = 'flex';
+  loadAuthAccounts();
+}
+
+function closeAuthModal() {
+  if (!authModal) return;
+  authModal.style.display = 'none';
+}
+
+if (closeAuthBtn) closeAuthBtn.addEventListener('click', closeAuthModal);
+if (authDoneBtn) authDoneBtn.addEventListener('click', closeAuthModal);
+if (globalAuthPill) globalAuthPill.addEventListener('click', openAuthModal);
+
+// Organization / User Profile Selector in Sidebar Header
 const orgSelector = document.getElementById('org-selector');
-const orgDropdown = document.getElementById('org-dropdown');
 const currentOrgName = document.getElementById('current-org-name');
 
-if (orgSelector && orgDropdown) {
+if (orgSelector) {
   orgSelector.addEventListener('click', (e) => {
     e.stopPropagation();
-    orgDropdown.style.display = orgDropdown.style.display === 'none' ? 'flex' : 'none';
+    openAuthModal();
   });
+}
 
-  document.querySelectorAll('.org-dropdown-item').forEach((item) => {
-    item.addEventListener('click', () => {
-      document.querySelectorAll('.org-dropdown-item').forEach((i) => i.classList.remove('active'));
-      item.classList.add('active');
-      const title = item.querySelector('.dropdown-title').textContent;
-      currentOrgName.textContent = title.split('.')[0];
-      orgDropdown.style.display = 'none';
-      appendFeed('task-line', `Switched active swarm context to <strong>${title}</strong>`);
-      loadInitialState();
+function updateAuthUI(user) {
+  if (user) {
+    if (currentOrgName) currentOrgName.textContent = user.display_name || user.account_id.split('.')[0];
+    if (orgAvatar) orgAvatar.textContent = user.avatar || 'U';
+    if (globalAuthLabel) globalAuthLabel.textContent = `${user.display_name} (${user.balance_near} NEAR)`;
+    if (authLoggedInBox) authLoggedInBox.style.display = 'block';
+    if (authAccountIdLabel) authAccountIdLabel.textContent = user.account_id;
+    if (authRoleBalanceLabel) {
+      authRoleBalanceLabel.textContent = `Role: ${user.role.toUpperCase()} · Balance: ${user.balance_near} NEAR · Public Key: ${user.public_key.slice(0, 20)}...`;
+    }
+  } else {
+    if (currentOrgName) currentOrgName.textContent = 'Sign In';
+    if (orgAvatar) orgAvatar.textContent = '?';
+    if (globalAuthLabel) globalAuthLabel.textContent = 'Sign In / Connect';
+    if (authLoggedInBox) authLoggedInBox.style.display = 'none';
+  }
+}
+
+async function loadAuthAccounts() {
+  if (!authQuickAccountsList) return;
+  try {
+    const res = await fetch('/api/auth/accounts');
+    if (!res.ok) return;
+    const { accounts } = await res.json();
+
+    authQuickAccountsList.innerHTML = '';
+    for (const acc of accounts) {
+      const isCurrent = currentUserSession && currentUserSession.account_id === acc.account_id;
+      const btn = document.createElement('div');
+      btn.className = `auth-quick-account-btn ${isCurrent ? 'active' : ''}`;
+      btn.innerHTML = `
+        <div class="auth-account-info-left">
+          <div class="auth-avatar-circle">${acc.avatar || 'U'}</div>
+          <div>
+            <div class="auth-title-bold">${acc.display_name}</div>
+            <div class="auth-sub-meta">${acc.account_id} · <span style="color:#0560af; font-weight:600;">${acc.balance_near} NEAR</span></div>
+          </div>
+        </div>
+        <div>
+          ${isCurrent ? '<span style="color:#10b981; font-weight:700; font-size:11px;">✓ ACTIVE</span>' : '<span style="color:#0560af; font-weight:600; font-size:11px;">Switch &rarr;</span>'}
+        </div>
+      `;
+      btn.addEventListener('click', () => {
+        loginAs(acc.account_id);
+      });
+      authQuickAccountsList.appendChild(btn);
+    }
+  } catch (err) {
+    console.error('Failed to load auth accounts:', err);
+  }
+}
+
+async function loginAs(accountId, notify = true) {
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ account_id: accountId }),
     });
+
+    if (!res.ok) return;
+    const data = await res.json();
+
+    if (data.success && data.token && data.user) {
+      currentSessionToken = data.token;
+      currentUserSession = data.user;
+      localStorage.setItem('ch_session_token', data.token);
+      updateAuthUI(data.user);
+
+      if (notify) {
+        appendFeed(
+          'settle-line',
+          `[AUTH] Authenticated as <strong>${data.user.account_id}</strong> (${data.user.balance_near} NEAR) via C# General Backend`
+        );
+      }
+      closeAuthModal();
+    }
+  } catch (err) {
+    console.error('Login failed:', err);
+  }
+}
+
+async function logoutAuth() {
+  if (currentSessionToken) {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${currentSessionToken}` },
+      });
+    } catch {}
+  }
+
+  currentSessionToken = null;
+  currentUserSession = null;
+  localStorage.removeItem('ch_session_token');
+  updateAuthUI(null);
+  appendFeed('task-line', '[AUTH] Logged out of active NEAR session.');
+  loadAuthAccounts();
+}
+
+if (authLogoutBtn) {
+  authLogoutBtn.addEventListener('click', logoutAuth);
+}
+
+if (customLoginBtn && customAccountInput) {
+  customLoginBtn.addEventListener('click', () => {
+    const customAcc = customAccountInput.value.trim();
+    if (customAcc) {
+      loginAs(customAcc, true);
+      customAccountInput.value = '';
+    }
   });
+}
+
+async function checkAuthStatus() {
+  if (currentSessionToken) {
+    try {
+      const res = await fetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${currentSessionToken}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.authenticated && data.user) {
+          currentUserSession = data.user;
+          updateAuthUI(data.user);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('Session verification error:', err);
+    }
+  }
+
+  // Auto-connect with default Employer account for zero-friction experience
+  await loginAs('employer1.clearing-house-swarm-01.testnet', false);
 }
 
 // Agent Role Selector Dropdown
@@ -690,14 +849,19 @@ async function triggerMissionDispatch() {
   if (missionPromptEl) missionPromptEl.value = '';
 
   try {
+    const authHeaders = {
+      'Content-Type': 'application/json',
+      ...(currentSessionToken ? { Authorization: `Bearer ${currentSessionToken}` } : {}),
+    };
+
     const res = await fetch('/api/post_task', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({
         prompt,
         title: prompt.slice(0, 45),
         budget_near: budgetNear,
-        employer_id: currentSelectedAgentRole !== 'swarm' ? currentSelectedAgentRole : undefined,
+        employer_id: currentSelectedAgentRole !== 'swarm' ? currentSelectedAgentRole : (currentUserSession?.account_id || undefined),
       }),
     });
 
@@ -773,5 +937,6 @@ document.querySelectorAll('.checklist-item').forEach((item, index) => {
 });
 
 // Boot up
+checkAuthStatus();
 loadInitialState();
 initEventStream();
