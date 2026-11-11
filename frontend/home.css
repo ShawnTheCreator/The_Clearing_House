@@ -75,6 +75,20 @@ body.home-page {
   text-decoration: none;
 }
 
+.brand-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-main-title {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #ffffff;
+  font-family: var(--font-sans);
+}
+
 .near-wordmark-svg {
   height: 24px;
   fill: #ffffff;
@@ -781,6 +795,16 @@ body.home-page {
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+.giant-brand-title {
+  font-size: clamp(48px, 9vw, 110px);
+  font-weight: 900;
+  letter-spacing: -3px;
+  line-height: 0.95;
+  color: #ffffff;
+  text-transform: lowercase;
+  user-select: none;
 }
 
 .giant-near-logo-svg {
