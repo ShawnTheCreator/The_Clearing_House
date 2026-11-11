@@ -34,7 +34,11 @@ const server = http.createServer((req, res) => {
   }
 
   // Serve static files
-  let filePath = path.join(process.cwd(), 'frontend', pathname === '/' ? 'index.html' : pathname);
+  let reqPath = pathname;
+  if (reqPath === '/app' || reqPath === '/workbench') {
+    reqPath = '/workbench.html';
+  }
+  let filePath = path.join(process.cwd(), 'frontend', reqPath === '/' ? 'index.html' : reqPath);
   if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
     filePath = path.join(process.cwd(), 'frontend', 'index.html');
   }
