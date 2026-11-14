@@ -213,11 +213,12 @@ export default function WorkbenchPage() {
     avatar: 'E',
   });
   const [authAccounts, setAuthAccounts] = useState<UserAccount[]>([
-    { account_id: 'employer1.clearing-house-swarm-01.testnet', display_name: 'Employer 1', role: 'Employer', balance_near: '48.25', public_key: 'ed25519:6QY7Y...4kL9', avatar: 'E' },
-    { account_id: 'employer2.clearing-house-swarm-01.testnet', display_name: 'Employer 2', role: 'Employer', balance_near: '32.10', public_key: 'ed25519:8TR9K...2wZ1', avatar: 'E' },
-    { account_id: 'worker1.clearing-house-swarm-01.testnet', display_name: 'Worker 1 (Exec)', role: 'Worker', balance_near: '12.45', public_key: 'ed25519:3XP2L...9qA5', avatar: 'W' },
-    { account_id: 'worker2.clearing-house-swarm-01.testnet', display_name: 'Worker 2 (Audit)', role: 'Worker', balance_near: '16.80', public_key: 'ed25519:5MM4N...7yE3', avatar: 'W' },
+    { account_id: 'employer1.clearing-house-swarm-01.testnet', display_name: 'Employer 1 (Admin)', role: 'Employer', balance_near: '48.25', public_key: 'ed25519:6QY7Y...4kL9', avatar: 'E' },
+    { account_id: 'employer2.clearing-house-swarm-01.testnet', display_name: 'Employer 2 (Funder)', role: 'Employer', balance_near: '32.10', public_key: 'ed25519:8TR9K...2wZ1', avatar: 'E' },
+    { account_id: 'worker1.clearing-house-swarm-01.testnet', display_name: 'Worker 1 (Execution)', role: 'Worker', balance_near: '12.45', public_key: 'ed25519:3XP2L...9qA5', avatar: 'W' },
+    { account_id: 'worker2.clearing-house-swarm-01.testnet', display_name: 'Worker 2 (Auditor)', role: 'Worker', balance_near: '16.80', public_key: 'ed25519:5MM4N...7yE3', avatar: 'W' },
     { account_id: 'worker4.clearing-house-swarm-01.testnet', display_name: 'Worker 4 (Fuzzer)', role: 'Worker', balance_near: '8.90', public_key: 'ed25519:9JK1R...4mD8', avatar: 'W' },
+    { account_id: 'judge8.clearing-house-swarm-01.testnet', display_name: 'AI Judge #8 (Evaluator)', role: 'Judge', balance_near: '50.00', public_key: 'ed25519:7JJ8X...1zY9', avatar: 'J' },
   ]);
 
   const feedEndRef = useRef<HTMLDivElement>(null);
@@ -860,15 +861,27 @@ export default function WorkbenchPage() {
             </div>
           </div>
           <div className="sub-toolbar-right" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div
+            <button
               className="account-status-pill"
-              title="Click to Sign In or Switch Account"
+              title="Click for 1-Click Login or to Switch Account"
               onClick={() => setAuthModalOpen(true)}
-              style={{ cursor: 'pointer' }}
+              style={{
+                cursor: 'pointer',
+                background: userSession ? 'rgba(105, 242, 190, 0.15)' : '#0560af',
+                color: userSession ? '#000000' : '#ffffff',
+                border: '1px solid ' + (userSession ? '#69f2be' : '#0560af'),
+                padding: '4px 12px',
+                borderRadius: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontWeight: 600,
+                fontSize: '12px',
+              }}
             >
-              <span className="status-dot green"></span>
-              <span>{userSession?.display_name || 'Sign In / Switch'} ({userSession?.balance_near || 0} NEAR)</span>
-            </div>
+              <span className={`status-dot ${userSession ? 'green' : 'amber'}`}></span>
+              <span>{userSession ? `${userSession.display_name} (${userSession.balance_near} NEAR)` : '🔑 1-Click Login (Demo Accounts)'}</span>
+            </button>
             <a href="https://testnet.nearblocks.io/address/job-board.clearing-house-swarm-01.testnet" target="_blank" rel="noreferrer">
               Contract: job-board.clearing-house-swarm-01.testnet &rarr;
             </a>
@@ -1148,6 +1161,10 @@ export default function WorkbenchPage() {
               <button className="icon-btn" onClick={() => setAuthModalOpen(false)}>✕</button>
             </div>
             <div className="modal-body">
+              <div style={{ padding: '10px 14px', background: 'rgba(105, 242, 190, 0.12)', border: '1px solid #69f2be', borderRadius: '8px', marginBottom: '14px', fontSize: '12px', lineHeight: 1.5, color: '#000000' }}>
+                ⚡ <strong>Quick Evaluator Login:</strong> Select any simulated NEAR sub-account below to instantly log in with realistic testnet balances, cryptographic Ed25519 keys, and scoped permissions.
+              </div>
+
               {userSession && (
                 <div style={{ padding: '12px', background: 'var(--bg-other)', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1163,7 +1180,7 @@ export default function WorkbenchPage() {
               )}
 
               <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                Quick 1-Click Fleet Switch:
+                Select Instant Demo Account (1-Click):
               </div>
               <div className="auth-quick-accounts">
                 {authAccounts.map((acc) => {
@@ -1189,7 +1206,7 @@ export default function WorkbenchPage() {
                         {isCurrent ? (
                           <span style={{ color: '#10b981', fontWeight: 700, fontSize: '11px' }}>✓ ACTIVE</span>
                         ) : (
-                          <span style={{ color: '#0560af', fontWeight: 600, fontSize: '11px' }}>Switch &rarr;</span>
+                          <span style={{ color: '#0560af', fontWeight: 600, fontSize: '11px' }}>Log In &rarr;</span>
                         )}
                       </div>
                     </div>
@@ -1198,8 +1215,17 @@ export default function WorkbenchPage() {
               </div>
 
               <div style={{ margin: '16px 0 12px', borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
-                <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  Or Connect Custom NEAR Account:
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Or Connect Custom NEAR Account:
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setCustomAccountInput('evaluator-judge8.testnet')}
+                    style={{ fontSize: '11px', color: '#0560af', background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                  >
+                    Quick Fill (evaluator-judge8.testnet)
+                  </button>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <input
@@ -1218,7 +1244,7 @@ export default function WorkbenchPage() {
                           account_id: customAccountInput.trim(),
                           display_name: customAccountInput.trim().split('.')[0],
                           role: 'Custom',
-                          balance_near: '10.0',
+                          balance_near: '25.0',
                           public_key: 'ed25519:custom',
                           avatar: customAccountInput.trim().charAt(0).toUpperCase(),
                         };

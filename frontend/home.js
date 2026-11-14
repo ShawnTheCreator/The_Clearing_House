@@ -122,3 +122,13 @@ if (subscribeBtn && subscribeInput) {
     }
   });
 }
+
+// Dynamic Dashboard Link resolution
+(function resolveDashboardLinks() {
+  const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  const targetUrl = isLocal ? 'http://localhost:3000' : 'https://dashboard-ths.vercel.app/';
+  const workbenchLinks = document.querySelectorAll('.btn-nav-workbench, .btn-hero-primary, a[href*="dashboard-ths"], a[href*="workbench"], a[href*="localhost:3000"]');
+  workbenchLinks.forEach((link) => {
+    link.href = targetUrl;
+  });
+})();
