@@ -1,7 +1,9 @@
 services:
-  # C# General Backend (Auth, Merkle Ledger, State, Job Board)
+  # =========================================================================
+  # BACKEND 1 (SEPARATE SERVICE): C# General Backend & Merkle Ledger API
+  # =========================================================================
   - type: web
-    name: the-clearing-house-api
+    name: the-clearing-house-csharp
     runtime: docker
     dockerfilePath: ./Dockerfile
     plan: free
@@ -10,13 +12,19 @@ services:
         value: 10000
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
+      # Connects to the separate Python AI Backend Web Service below
+      - key: AI_BACKEND_URL
+        value: https://the-clearing-house-python.onrender.com
 
-  # Python AI Swarm Backend (Optional microservice)
+  # =========================================================================
+  # BACKEND 2 (SEPARATE SERVICE): Python AI Swarm Backend
+  # =========================================================================
   - type: web
-    name: the-clearing-house-ai
+    name: the-clearing-house-python
     runtime: python
+    rootDir: backend_python
     buildCommand: "python --version"
-    startCommand: "python backend_python/main.py"
+    startCommand: "python main.py"
     plan: free
     envVars:
       - key: PORT
