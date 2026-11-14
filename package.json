@@ -7,6 +7,10 @@
   "scripts": {
     "build": "echo 'Static build ready'",
     "start": "node --experimental-strip-types gateway/daemon.ts",
+    "dev:home": "npm --prefix home_vite run dev",
+    "dev:dashboard": "npm --prefix dashboard_nextjs run dev",
+    "build:home": "npm --prefix home_vite run build",
+    "build:dashboard": "npm --prefix dashboard_nextjs run build",
     "start:all": "node scripts/start_all.js",
     "start:frontend": "node frontend/serve.js",
     "start:csharp": "dotnet run --project backend_csharp/TheClearingHouse.Api",

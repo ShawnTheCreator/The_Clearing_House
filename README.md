@@ -153,11 +153,18 @@ npx near-cli view job-board.clearing-house-swarm-01.testnet get_latest_root '{}'
 npx near-cli view job-board.clearing-house-swarm-01.testnet get_task '{"job_id": "job_live_783050_01"}' --networkId testnet
 ```
 
-### Step 5: Launch Three-Tier Full Stack (Frontend + C# + Python)
+### Step 5: Launch Modular Frontends (Vite Home + Next.js Workbench)
 ```bash
+# Terminal 1: Launch Vite Landing Page (Port 5173)
+npm run dev:home
+# Open http://localhost:5173 for the near.org-inspired landing page
+
+# Terminal 2: Launch Next.js Devin-Style Workbench Dashboard (Port 3000)
+npm run dev:dashboard
+# Open http://localhost:3000 for the full interactive Workbench
+
+# (Optional) Launch Three-Tier Full Stack (Unified Frontend + C# + Python)
 npm run start:all
-# Open http://localhost:3000 for the Home Page
-# Open http://localhost:3000/workbench for the Devin-style Workbench
 ```
 
 ### Step 6: Launch Standalone Terminal Noir Dashboard
