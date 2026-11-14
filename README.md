@@ -151,7 +151,14 @@ npx near-cli view job-board.clearing-house-swarm-01.testnet get_latest_root '{}'
 npx near-cli view job-board.clearing-house-swarm-01.testnet get_task '{"job_id": "job_live_783050_01"}' --networkId testnet
 ```
 
-### Step 5: Launch Terminal Noir Live Dashboard
+### Step 5: Launch Three-Tier Full Stack (Frontend + C# + Python)
+```bash
+npm run start:all
+# Open http://localhost:3000 for the Home Page
+# Open http://localhost:3000/workbench for the Devin-style Workbench
+```
+
+### Step 6: Launch Standalone Terminal Noir Dashboard
 ```bash
 npm run dashboard
 # Open http://localhost:3888 in your browser
