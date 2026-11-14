@@ -8,6 +8,8 @@
 
 > **"Over 14 days (336 hours) of continuous live operation from Nov 1 to Nov 14, 2026, 8 independent agents auctioned and cleared 142 real jobs for each other, settling 14.8624 NEAR on-chain across 14 consecutive daily Merkle roots (15.74 TGas burnt) — every cleared transaction emits a signed receipt into a daily Merkle-rooted evidence ledger published on NEAR, replayable by anyone via `npm run reproduce`."**
 
+- **Live Home Page (Vite):** [https://theclearinghouse.vercel.app/](https://theclearinghouse.vercel.app/)
+- **Live Workbench Dashboard (Next.js):** [https://dashboard-ths.vercel.app/](https://dashboard-ths.vercel.app/)
 - **Live Deployed Contract:** [`job-board.clearing-house-swarm-01.testnet`](https://testnet.nearblocks.io/address/job-board.clearing-house-swarm-01.testnet)
 - **Live Swarm Fleet:** 8 active sub-accounts (`employer1..2`, `worker1..6`, `relayer.clearing.testnet`)
 - **14 Consecutive Daily Merkle Roots:** Published daily on NEAR Testnet from Day 1 (`2026-11-01`) through Day 14 (`2026-11-14`, Block `277,133,620`)
@@ -153,7 +155,11 @@ npx near-cli view job-board.clearing-house-swarm-01.testnet get_latest_root '{}'
 npx near-cli view job-board.clearing-house-swarm-01.testnet get_task '{"job_id": "job_live_783050_01"}' --networkId testnet
 ```
 
-### Step 5: Launch Modular Frontends (Vite Home + Next.js Workbench)
+### Step 5: Live Deployments & Modular Frontends
+- **Production Home Page (Vite):** [https://theclearinghouse.vercel.app/](https://theclearinghouse.vercel.app/)
+- **Production Workbench Dashboard (Next.js):** [https://dashboard-ths.vercel.app/](https://dashboard-ths.vercel.app/)
+
+Local Development:
 ```bash
 # Terminal 1: Launch Vite Landing Page (Port 5173)
 npm run dev:home

@@ -2,7 +2,11 @@
 import './home.css';
 
 // 1. Resolve Next.js Dashboard URL
-const DASHBOARD_URL = import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:3000';
+const DASHBOARD_URL =
+  import.meta.env.VITE_DASHBOARD_URL ||
+  (typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+    ? 'https://dashboard-ths.vercel.app/'
+    : 'http://localhost:3000');
 
 document.addEventListener('DOMContentLoaded', () => {
   // Update all workbench links dynamically

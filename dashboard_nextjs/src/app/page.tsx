@@ -139,7 +139,11 @@ function formatNear(yoctonear?: string): string {
 }
 
 export default function WorkbenchPage() {
-  const homeUrl = process.env.NEXT_PUBLIC_HOME_URL || 'http://localhost:5173';
+  const homeUrl =
+    process.env.NEXT_PUBLIC_HOME_URL ||
+    (typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+      ? 'https://theclearinghouse.vercel.app/'
+      : 'http://localhost:5173');
 
   // Navigation & View States
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
