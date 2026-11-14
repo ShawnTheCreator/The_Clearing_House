@@ -5,6 +5,7 @@
   "type": "module",
   "main": "gateway/daemon.ts",
   "scripts": {
+    "build": "echo 'Static build ready'",
     "start": "node --experimental-strip-types gateway/daemon.ts",
     "start:all": "node scripts/start_all.js",
     "start:frontend": "node frontend/serve.js",

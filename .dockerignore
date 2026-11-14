@@ -1,0 +1,9 @@
+.git
+.github
+node_modules
+bin
+obj
+backend_csharp/**/bin
+backend_csharp/**/obj
+backend_python/__pycache__
+*.log

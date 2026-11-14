@@ -567,6 +567,11 @@ Click "Verify Proof" above to walk the cryptographic RFC 6962 inclusion path for
           <label>FunctionCall Gas Allowance:</label>
           <input type="text" value="250 TGas (0.25 NEAR)" class="terminal-input" readonly/>
         </div>
+        <div class="setting-item">
+          <label>Render / Cloud Backend API URL:</label>
+          <input type="text" placeholder="https://the-clearing-house-api.onrender.com (or leave empty for default)" class="terminal-input" id="setting-api-url"/>
+          <small style="color:#6b7280; font-size:11px; margin-top:3px; display:block;">When deploying frontend on Vercel and backend on Render, enter your Render API URL here if not using reverse proxy.</small>
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn-primary-blue" id="save-settings-btn">Save Settings</button>

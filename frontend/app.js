@@ -27,6 +27,24 @@ if (sidebarToggleBtn && sidebarEl) {
 }
 
 // =========================================================================
+// DYNAMIC API BASE ROUTING (Supports Vercel -> Render Cross-Deployment)
+// =========================================================================
+let customApiUrl = localStorage.getItem('ch_custom_api_url') || '';
+function apiUrl(path) {
+  if (customApiUrl) {
+    const base = customApiUrl.replace(/\/$/, '');
+    return `${base}${path}`;
+  }
+  return path;
+}
+
+// Update static export link
+const exportBtn = document.getElementById('export-btn');
+if (exportBtn) {
+  exportBtn.href = apiUrl('/api/export');
+}
+
+// =========================================================================
 // AUTHENTICATION & LOGIN (Managed by C# General Backend)
 // =========================================================================
 const authModal = document.getElementById('auth-modal');
@@ -93,7 +111,7 @@ function updateAuthUI(user) {
 async function loadAuthAccounts() {
   if (!authQuickAccountsList) return;
   try {
-    const res = await fetch('/api/auth/accounts');
+    const res = await fetch(apiUrl('/api/auth/accounts'));
     if (!res.ok) return;
     const { accounts } = await res.json();
 
@@ -126,7 +144,7 @@ async function loadAuthAccounts() {
 
 async function loginAs(accountId, notify = true) {
   try {
-    const res = await fetch('/api/auth/login', {
+    const res = await fetch(apiUrl('/api/auth/login'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ account_id: accountId }),
@@ -157,7 +175,7 @@ async function loginAs(accountId, notify = true) {
 async function logoutAuth() {
   if (currentSessionToken) {
     try {
-      await fetch('/api/auth/logout', {
+      await fetch(apiUrl('/api/auth/logout'), {
         method: 'POST',
         headers: { Authorization: `Bearer ${currentSessionToken}` },
       });
@@ -189,7 +207,7 @@ if (customLoginBtn && customAccountInput) {
 async function checkAuthStatus() {
   if (currentSessionToken) {
     try {
-      const res = await fetch('/api/auth/me', {
+      const res = await fetch(apiUrl('/api/auth/me'), {
         headers: { Authorization: `Bearer ${currentSessionToken}` },
       });
       if (res.ok) {
@@ -383,9 +401,11 @@ const settingsModal = document.getElementById('settings-modal');
 const settingsBtn = document.getElementById('settings-btn');
 const closeSettingsBtn = document.getElementById('close-settings-btn');
 const saveSettingsBtn = document.getElementById('save-settings-btn');
+const settingApiUrl = document.getElementById('setting-api-url');
 
 function openSettings() {
   if (settingsModal) settingsModal.style.display = 'flex';
+  if (settingApiUrl) settingApiUrl.value = customApiUrl;
 }
 function closeSettings() {
   if (settingsModal) settingsModal.style.display = 'none';
@@ -395,8 +415,18 @@ if (settingsBtn) settingsBtn.addEventListener('click', openSettings);
 if (closeSettingsBtn) closeSettingsBtn.addEventListener('click', closeSettings);
 if (saveSettingsBtn) {
   saveSettingsBtn.addEventListener('click', () => {
+    if (settingApiUrl) {
+      customApiUrl = settingApiUrl.value.trim();
+      if (customApiUrl) {
+        localStorage.setItem('ch_custom_api_url', customApiUrl);
+      } else {
+        localStorage.removeItem('ch_custom_api_url');
+      }
+      if (exportBtn) exportBtn.href = apiUrl('/api/export');
+    }
     closeSettings();
-    appendFeed('task-line', 'Configuration saved: Connected to NEAR RPC.');
+    appendFeed('task-line', `Configuration saved${customApiUrl ? ': API URL -> ' + customApiUrl : ''}.`);
+    loadInitialState();
   });
 }
 
@@ -535,7 +565,7 @@ function formatNear(yoctonear) {
 // Load Initial State
 async function loadInitialState() {
   try {
-    const res = await fetch('/api/state');
+    const res = await fetch(apiUrl('/api/state'));
     if (!res.ok) return;
     const data = await res.json();
 
@@ -577,7 +607,7 @@ function renderSubAccounts(accounts) {
 
 async function loadSubAccounts() {
   try {
-    const res = await fetch('/api/state');
+    const res = await fetch(apiUrl('/api/state'));
     const data = await res.json();
     if (data.subAccounts) renderSubAccounts(data.subAccounts);
   } catch (err) {
@@ -589,7 +619,7 @@ async function loadSubAccounts() {
 async function loadJobBoard(statusFilter = 'all') {
   if (!jobsTableBody) return;
   try {
-    const res = await fetch('/api/tasks');
+    const res = await fetch(apiUrl('/api/tasks'));
     const data = await res.json();
     let tasks = data.tasks || [];
 
@@ -662,7 +692,7 @@ document.querySelectorAll('.filter-pill').forEach((pill) => {
 async function loadDisputes() {
   if (!disputesTbody) return;
   try {
-    const res = await fetch('/api/disputes');
+    const res = await fetch(apiUrl('/api/disputes'));
     const data = await res.json();
     const disputes = data.disputes || [];
 
@@ -685,7 +715,7 @@ async function loadDisputes() {
 
 // SSE Live Stream Listener
 function initEventStream() {
-  const eventSource = new EventSource('/api/stream');
+  const eventSource = new EventSource(apiUrl('/api/stream'));
 
   eventSource.onmessage = (e) => {
     try {
@@ -783,7 +813,7 @@ async function verifyReceipt(targetReceiptId) {
   inspectorOutput.textContent = `Querying RFC 6962 inclusion proof for ${receiptId}...`;
 
   try {
-    const res = await fetch(`/api/verify/${receiptId}`);
+    const res = await fetch(apiUrl(`/api/verify/${receiptId}`));
     if (!res.ok) {
       inspectorOutput.textContent = `Receipt "${receiptId}" not found in current ledger.`;
       return;
@@ -854,7 +884,7 @@ async function triggerMissionDispatch() {
       ...(currentSessionToken ? { Authorization: `Bearer ${currentSessionToken}` } : {}),
     };
 
-    const res = await fetch('/api/post_task', {
+    const res = await fetch(apiUrl('/api/post_task'), {
       method: 'POST',
       headers: authHeaders,
       body: JSON.stringify({
@@ -911,7 +941,7 @@ if (triggerBatchBtn) {
     triggerBatchBtn.disabled = true;
     triggerBatchBtn.textContent = '⏳ Swarm Executing Batch...';
     try {
-      await fetch('/api/trigger_batch', { method: 'POST' });
+      await fetch(apiUrl('/api/trigger_batch'), { method: 'POST' });
     } finally {
       setTimeout(() => {
         triggerBatchBtn.disabled = false;

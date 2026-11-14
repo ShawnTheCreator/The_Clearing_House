@@ -1,0 +1,23 @@
+services:
+  # C# General Backend (Auth, Merkle Ledger, State, Job Board)
+  - type: web
+    name: the-clearing-house-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+
+  # Python AI Swarm Backend (Optional microservice)
+  - type: web
+    name: the-clearing-house-ai
+    runtime: python
+    buildCommand: "python --version"
+    startCommand: "python backend_python/main.py"
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8000

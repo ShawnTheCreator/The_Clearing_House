@@ -5,8 +5,9 @@ using TheClearingHouse.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Port 5000
-builder.WebHost.UseUrls("http://0.0.0.0:5000");
+// Configure Port (supports Render $PORT or defaults to 5000)
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // Add Services
 builder.Services.AddCors(options =>

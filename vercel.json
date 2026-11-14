@@ -1,0 +1,25 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/workbench",
+      "destination": "/frontend/workbench.html"
+    },
+    {
+      "source": "/app",
+      "destination": "/frontend/workbench.html"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "https://the-clearing-house-api.onrender.com/api/:path*"
+    },
+    {
+      "source": "/",
+      "destination": "/frontend/index.html"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/frontend/:path*"
+    }
+  ]
+}
