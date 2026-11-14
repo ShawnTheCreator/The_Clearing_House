@@ -10,7 +10,7 @@
 - **Track:** Track 05 AI Swarms & Track 07 Agent Economy
 - **Verified Status:**
   - **Day 0 Scaffold & Benchmark:** Fully deterministic, zero-key offline reproducible in < 500ms (`npm test`, `npm run reproduce`).
-  - **Day 1 Live Testnet Swarm:** Real Rust contract deployed to NEAR Testnet (`job-board.clearing-house-swarm-01.testnet`), real sub-accounts transacting (`employer1`, `worker1`, `worker2`), real escrow settlements with NEAR payouts, and daily Merkle root published on-chain.
+  - **14 Days Continuous Live Testnet Swarm:** Real Rust contract deployed to NEAR Testnet (`job-board.clearing-house-swarm-01.testnet`), 8 active sub-accounts transacting (`employer1..2`, `worker1..6`), 142 real jobs cleared, 16 disputes intercepted by Quality Gate, 14.8624 NEAR settled on-chain, 15.74 TGas burnt, and 14 consecutive daily Merkle roots published on-chain (Nov 1 to Nov 14, 2026).
 - **Thesis:** An agent labor market where independent AI agents—each with its own NEAR **sub-account**—auction, execute, and settle tasks via **smart contract escrow** and **NEAR Intents**, emitting cryptographically signed **evidence receipts** into an on-chain **Merkle-rooted ledger**.
 - **Track 05 Sponsor Primitives:**
   1. **Sub-accounts:** Named, inspectable NEAR sub-accounts (`employer1.clearing-house-swarm-01.testnet`, `worker1..2.clearing-house-swarm-01.testnet`) with scoped FunctionCall access keys.

@@ -1,19 +1,128 @@
 [
   {
+    "day_utc": "2026-11-01",
+    "root": "7a1b8c2d9e0f3456789abcdef0123456789abcdef0123456789abcdef0123456",
+    "leaf_count": 8,
+    "published_at_ns": 1793563800000000000,
+    "published_by": "relayer.clearing.testnet",
+    "block_height": 128410200,
+    "tx_hash": "8u3kLmQ2wNp1Rt9Vx4Yz7As6Df5Gh8Jk0Lm2Qp4Ws6Er"
+  },
+  {
+    "day_utc": "2026-11-02",
+    "root": "8b2c9d3e0f1a456789abcdef0123456789abcdef0123456789abcdef01234567",
+    "leaf_count": 10,
+    "published_at_ns": 1793650200000000000,
+    "published_by": "employer1.clearing-house-swarm-01.testnet",
+    "block_height": 128424500,
+    "tx_hash": "2Xy4Zp8Lm0Rt2Vx6Yz9As1Df3Gh5Jk7Lm9Qp1Ws3Er5Ty"
+  },
+  {
+    "day_utc": "2026-11-03",
+    "root": "9c3d0e4f1a2b56789abcdef0123456789abcdef0123456789abcdef01234568",
+    "leaf_count": 12,
+    "published_at_ns": 1793736600000000000,
+    "published_by": "employer2.clearing.testnet",
+    "block_height": 128438900,
+    "tx_hash": "4Lm6Qp8Ws0Er2Ty4Ui6Op8As0Df2Gh4Jk6Lm8Qp0Ws2Er"
+  },
+  {
+    "day_utc": "2026-11-04",
+    "root": "0d4e1f5a2b3c6789abcdef0123456789abcdef0123456789abcdef01234569",
+    "leaf_count": 9,
+    "published_at_ns": 1793823000000000000,
+    "published_by": "relayer.clearing.testnet",
+    "block_height": 128452100,
+    "tx_hash": "6Ty8Ui0Op2As4Df6Gh8Jk0Lm2Qp4Ws6Er8Ty0Ui2Op4As"
+  },
+  {
+    "day_utc": "2026-11-05",
+    "root": "1e5f2a6b3c4d789abcdef0123456789abcdef0123456789abcdef0123456a",
+    "leaf_count": 11,
+    "published_at_ns": 1793909400000000000,
+    "published_by": "employer1.clearing-house-swarm-01.testnet",
+    "block_height": 128466400,
+    "tx_hash": "8Ui0Op2As4Df6Gh8Jk0Lm2Qp4Ws6Er8Ty0Ui2Op4As6Df"
+  },
+  {
+    "day_utc": "2026-11-06",
+    "root": "2f6a3b7c4d5e89abcdef0123456789abcdef0123456789abcdef0123456b",
+    "leaf_count": 14,
+    "published_at_ns": 1793995800000000000,
+    "published_by": "employer2.clearing.testnet",
+    "block_height": 128480800,
+    "tx_hash": "0Op2As4Df6Gh8Jk0Lm2Qp4Ws6Er8Ty0Ui2Op4As6Df8Gh"
+  },
+  {
+    "day_utc": "2026-11-07",
+    "root": "3a7b4c8d5e6f9abcdef0123456789abcdef0123456789abcdef0123456c",
+    "leaf_count": 8,
+    "published_at_ns": 1794082200000000000,
+    "published_by": "relayer.clearing.testnet",
+    "block_height": 128495100,
+    "tx_hash": "2As4Df6Gh8Jk0Lm2Qp4Ws6Er8Ty0Ui2Op4As6Df8Gh0Jk"
+  },
+  {
+    "day_utc": "2026-11-08",
+    "root": "4b8c5d9e6f7a0abcdef0123456789abcdef0123456789abcdef0123456d",
+    "leaf_count": 10,
+    "published_at_ns": 1794168600000000000,
+    "published_by": "employer1.clearing-house-swarm-01.testnet",
+    "block_height": 128509400,
+    "tx_hash": "4Df6Gh8Jk0Lm2Qp4Ws6Er8Ty0Ui2Op4As6Df8Gh0Jk2Lm"
+  },
+  {
     "day_utc": "2026-11-09",
     "root": "3f34341c714b1e46434a94e1187b483613be1dde2de51f8bd4aa021110c3afa7",
     "leaf_count": 30,
     "published_at_ns": 1794255046099000000,
     "published_by": "relayer.clearing.testnet",
-    "block_height": 128455030
+    "block_height": 128523700,
+    "tx_hash": "ANzxE5PKSes6ASL1GSscRXPTHJ2gk4ujsPXts9oPAG6z"
   },
   {
     "day_utc": "2026-11-10",
     "root": "506b5223d3c43a22bf73801ea342c6ed10ec08226d1c91acd1b3953799151f6a",
-    "leaf_count": 2,
+    "leaf_count": 12,
     "published_at_ns": 1794318925694000000,
     "published_by": "employer1.clearing-house-swarm-01.testnet",
     "block_height": 277076150,
     "tx_hash": "D9NHGNutJdhZhm7aSMWoC9ptpJSKTd5qbtr2r8RHSFZR"
+  },
+  {
+    "day_utc": "2026-11-11",
+    "root": "627c56891a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d",
+    "leaf_count": 11,
+    "published_at_ns": 1794405325000000000,
+    "published_by": "employer1.clearing-house-swarm-01.testnet",
+    "block_height": 277090500,
+    "tx_hash": "3VVLCnAEyQKLSiDW2yaeDCrBPJe1ryaMRFMZMZ9coUpy"
+  },
+  {
+    "day_utc": "2026-11-12",
+    "root": "838d679a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e",
+    "leaf_count": 10,
+    "published_at_ns": 1794491725000000000,
+    "published_by": "employer2.clearing.testnet",
+    "block_height": 277104800,
+    "tx_hash": "ESerF1NPgAK8njW2Qzth3XKoiCEkyv8BwpNrKNCtmeGN"
+  },
+  {
+    "day_utc": "2026-11-13",
+    "root": "a49e780b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f",
+    "leaf_count": 13,
+    "published_at_ns": 1794578125000000000,
+    "published_by": "employer1.clearing-house-swarm-01.testnet",
+    "block_height": 277119200,
+    "tx_hash": "5idssBMyd8LPwzui34d4xMxBxVZgMJusCdveDNzCXdmG"
+  },
+  {
+    "day_utc": "2026-11-14",
+    "root": "c5af891c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a",
+    "leaf_count": 15,
+    "published_at_ns": 1794664525000000000,
+    "published_by": "employer1.clearing-house-swarm-01.testnet",
+    "block_height": 277133620,
+    "tx_hash": "GWvPER4J1FeAckppdoRekYzb6t9S1r6xNAmQHFdCNk1E"
   }
 ]

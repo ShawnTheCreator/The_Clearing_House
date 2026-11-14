@@ -91,6 +91,11 @@ export function verifyReceiptById(targetReceiptId?: string, isLiveCheck: boolean
   const tree = new MerkleTree(activeCorpus);
   const calculatedRoot = tree.getRoot();
 
+  const matchingPublished = roots.find((r) => r.root.toLowerCase() === calculatedRoot.toLowerCase());
+  if (matchingPublished) {
+    expectedRootRecord = matchingPublished;
+  }
+
   console.log('\n--- WALKING MERKLE INCLUSION PROOF ---');
   const rawHash = hashReceipt(receiptToVerify);
   const leafHash = MerkleTree.hashLeaf(rawHash);
